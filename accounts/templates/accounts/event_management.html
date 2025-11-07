@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow p-4">
+        <h2 class="text-center">📅 Event Management</h2>
+        <p class="text-center text-muted">Manage all church events from one place.</p>
+
+        <!-- Quick Actions -->
+        <div class="row mt-4">
+            {% if user.member.role.name == "Pastor" or user.is_staff or user.is_superuser %}
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm p-3 text-center h-100">
+                    <h5>Create New Event</h5>
+                    <a href="{% url 'accounts:add_event' %}" class="btn btn-primary mt-2">+ Add Event</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm p-3 text-center h-100">
+                    <h5>Manage Events</h5>
+                    <a href="{% url 'accounts:events' %}" class="btn btn-warning mt-2">View All Events</a>
+                </div>
+            </div>
+
+            {% if user.member.role.name == "Pastor" or user.is_staff or user.is_superuser %}
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm p-3 text-center h-100">
+                    <h5>Event Reports</h5>
+                    <a href="{% url 'accounts:event_report' %}" class="btn btn-success mt-2">Generate Report</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Stats -->
+        <div class="row mt-4">
+            <div class="col-md-6 mb-2">
+                <div class="alert alert-info text-center">
+                    <strong>Total Events:</strong> {{ total_events }}
+                </div>
+            </div>
+            <div class="col-md-6 mb-2">
+                <div class="alert alert-success text-center">
+                    <strong>Upcoming Events:</strong> {{ upcoming_events }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Events Table -->
+        <div class="mt-4">
+            <h4>Recent Events</h4>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            {% if user.member.role.name == "Pastor" or user.is_staff or user.is_superuser %}
+                            <th>Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in events %}
+                        <tr>
+                            <td>{{ event.title }}</td>
+                            <td>{{ event.date|date:"M d, Y" }}</td>
+                            <td>{{ event.location }}</td>
+                            <td>
+                                {% if event.date >= today %}
+                                    <span class="badge bg-success">Upcoming</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Past</span>
+                                {% endif %}
+                            </td>
+                            {% if user.member.role.name == "Pastor" or user.is_staff or user.is_superuser %}
+                            <td>
+                                <a href="{% url 'accounts:edit_event' event.id %}" class="btn btn-sm btn-warning">Edit</a>
+                                <a href="{% url 'accounts:delete_event' event.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this event?');">Delete</a>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No events found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

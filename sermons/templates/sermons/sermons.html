@@ -1,0 +1,40 @@
+{% extends "accounts/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>📖 Sermons</h1>
+
+    {% if sermons %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Preacher</th>
+                    <th>Date</th>
+                    <th>Media</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sermon in sermons %}
+                <tr>
+                    <td>{{ sermon.title }}</td>
+                    <td>{{ sermon.preacher }}</td>
+                    <td>{{ sermon.date|date:"M d, Y" }}</td>
+                    <td>
+                        {% if sermon.media_url %}
+                            <a href="{{ sermon.media_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                🎧 Watch / Listen
+                            </a>
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No sermons available yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

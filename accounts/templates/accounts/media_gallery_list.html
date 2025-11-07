@@ -1,0 +1,22 @@
+<h2>Media Gallery</h2>
+<a href="{% url 'accounts:media_gallery_create' %}" class="btn btn-primary">Upload New</a>
+<hr>
+
+<div class="row">
+{% for item in items %}
+  <div class="col-md-3">
+    <div class="card mb-3">
+      {% if item.media_type == "image" %}
+        <img src="{{ item.file.url }}" class="card-img-top" style="height:200px; object-fit:cover;">
+      {% else %}
+        <video src="{{ item.file.url }}" controls style="width:100%; height:200px;"></video>
+      {% endif %}
+      <div class="card-body">
+        <h5>{{ item.title }}</h5>
+        <a href="{% url 'accounts:media_gallery_edit' item.id %}" class="btn btn-sm btn-warning">Edit</a>
+        <a href="{% url 'accounts:media_gallery_delete' item.id %}" class="btn btn-sm btn-danger">Delete</a>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h2 class="mb-3">🤝 Volunteer</h2>
+        <p class="text-muted">Join and manage your volunteer activities here.</p>
+        <hr>
+
+        <!-- Always show common departments -->
+        <div class="mb-4">
+            <h5>1️⃣ Common Volunteer Departments / Roles</h5>
+            <ul>
+                <li><strong>Ushering / Hospitality:</strong> welcoming members, helping with seating, managing events.</li>
+                <li><strong>Choir / Music Ministry:</strong> singing, playing instruments, supporting worship services.</li>
+                <li><strong>Teaching / Sunday School:</strong> teaching children or youth.</li>
+                <li><strong>Media / Technical:</strong> managing sound, video, livestream, presentations.</li>
+                <li><strong>Prayer Ministry:</strong> interceding, counseling, or support.</li>
+                <li><strong>Outreach / Community Service:</strong> visiting hospitals, helping in charity work.</li>
+                <li><strong>Event Support:</strong> setting up events, serving refreshments, logistics.</li>
+            </ul>
+        </div>
+
+        <!-- Application form (always visible) -->
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Select Department <span class="text-danger">*</span></label>
+                <select name="department" class="form-select" required>
+                    <option value="">-- Choose Department --</option>
+                    <option>Ushering</option>
+                    <option>Choir</option>
+                    <option>Media</option>
+                    <option>Cleaning</option>
+                    <option>Sunday School</option>
+                    <option>Security</option>
+                    <option>Welfare</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Availability <span class="text-danger">*</span></label>
+                <input type="text" name="availability" class="form-control" placeholder="e.g. Sundays 8AM–12PM" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Apply as Volunteer</button>
+        </form>
+
+        {% if volunteer %}
+            <hr>
+            <div class="alert alert-info mt-3">
+                <strong>Status:</strong> {{ volunteer.status }}
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

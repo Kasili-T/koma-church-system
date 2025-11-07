@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav id="sidebarMenu" class="col-lg-3 col-md-4 d-md-block bg-light sidebar collapse shadow-sm">
+            <div class="position-sticky p-3">
+                <div class="text-center mb-3">
+                    {% if user.member and user.member.profile_picture %}
+                        <img src="{{ user.member.profile_picture.url }}" class="rounded-circle" width="100" height="100" alt="Profile Picture">
+                    {% else %}
+                        <i class="fas fa-user-circle fa-6x text-secondary"></i>
+                    {% endif %}
+                </div>
+                <h5 class="text-center">{{ user.username }}</h5>
+                <p class="text-center text-muted">{% if user.member and user.member.role %}{{ user.member.role.name }}{% else %}N/A{% endif %}</p>
+
+                <!-- Profile Completion -->
+                <div class="mb-3" title="Complete profile for better experience">
+                    <label class="form-label small">Profile Completion</label>
+                    <div class="progress mb-2" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: {{ profile_completion }}%;" role="progressbar"></div>
+                    </div>
+                    <small class="text-muted">{{ profile_completion }}% Complete</small>
+                </div>
+
+                <!-- Achievements / Badges -->
+                <div class="mb-3">
+                    <h6>Achievements</h6>
+                    {% for badge in badges %}
+                        <span class="badge bg-{{ badge.color }} me-1">{{ badge.name }}</span>
+                    {% empty %}
+                        <span class="text-muted small">No achievements yet</span>
+                    {% endfor %}
+                </div>
+
+                <!-- Quick Links -->
+                <ul class="nav flex-column mt-3">
+                    <li class="nav-item mb-1"><a class="nav-link btn btn-outline-primary w-100 mb-1" href="{% url 'accounts:donations' %}"><i class="fas fa-hand-holding-heart me-2"></i> My Donations</a></li>
+                    <li class="nav-item mb-1"><a class="nav-link btn btn-outline-info w-100 mb-1" href="{% url 'accounts:attendance' %}"><i class="fas fa-calendar-check me-2"></i> Attendance</a></li>
+                    <li class="nav-item mb-1"><a class="nav-link btn btn-outline-secondary w-100 mb-1" href="{% url 'accounts:events' %}"><i class="fas fa-calendar-alt me-2"></i> Events</a></li>
+                    <li class="nav-item mb-1"><a class="nav-link btn btn-outline-warning w-100 mb-1" href="{% url 'accounts:make_donation' %}"><i class="fas fa-donate me-2"></i> Contribute</a></li>
+                    <li class="nav-item mb-1"><a class="nav-link btn btn-outline-danger w-100 mb-1" href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-lg-9 col-md-8 ms-sm-auto px-md-4">
+            <button class="btn btn-outline-secondary d-md-none mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                <i class="fas fa-bars"></i> Menu
+            </button>
+
+            <!-- Top Stats Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card shadow-sm text-center p-3">
+                        <h6>Total Donations</h6>
+                        <h3>KSh {{ total_donations|default:"0" }}</h3>
+                        <canvas id="donationMiniChart" height="40"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm text-center p-3">
+                        <h6>Events Attended</h6>
+                        <h3>{{ events_attended_count|default:"0" }}</h3>
+                        <canvas id="attendanceMiniChart" height="40"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm text-center p-3">
+                        <h6>Volunteer Activities</h6>
+                        <h3>{{ volunteer_count|default:"0" }}</h3>
+                        <canvas id="volunteerMiniChart" height="40"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs Section -->
+            <ul class="nav nav-tabs mb-3" id="profileTab" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button">Personal Info</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button">Activity & History</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button">Change Password</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="profileTabContent">
+                <!-- Personal Info -->
+                <div class="tab-pane fade show active" id="personal">
+                    <div class="card shadow-sm mb-4 p-3">
+                        <form method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">First Name</label>
+                                    <input type="text" class="form-control" name="first_name" value="{{ user.first_name }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" name="last_name" value="{{ user.last_name }}">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" value="{{ user.email }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" name="phone" value="{% if user.member %}{{ user.member.phone }}{% endif %}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Profile Picture</label>
+                                <input type="file" class="form-control" name="profile_picture">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Activity & History -->
+                <div class="tab-pane fade" id="activity">
+                    <div class="card shadow-sm mb-4 p-3">
+                        <h5>Donation Trends</h5>
+                        <canvas id="donationChart" height="150" class="mb-4"></canvas>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <h6>Recent Donations</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped">
+                                        <thead><tr><th>Date</th><th>Amount</th></tr></thead>
+                                        <tbody>
+                                            {% for donation in recent_donations %}
+                                                <tr>
+                                                    <td>{{ donation.date|date:"d M Y" }}</td>
+                                                    <td>KSh {{ donation.amount }}</td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr><td colspan="2" class="text-center text-muted">No donations yet</td></tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Attendance History</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped">
+                                        <thead><tr><th>Date</th><th>Event</th></tr></thead>
+                                        <tbody>
+                                            {% for record in attendance_history %}
+                                                <tr>
+                                                    <td>{{ record.date|date:"d M Y" }}</td>
+                                                    <td>{{ record.event_name }}</td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr><td colspan="2" class="text-center text-muted">No attendance records</td></tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6>Volunteer Activities</h6>
+                        <div class="table-responsive mb-4">
+                            <table class="table table-sm table-striped">
+                                <thead><tr><th>Date</th><th>Task</th><th>Event</th></tr></thead>
+                                <tbody>
+                                    {% for task in volunteer_history %}
+                                        <tr>
+                                            <td>{{ task.date|date:"d M Y" }}</td>
+                                            <td>{{ task.role }}</td>
+                                            <td>{{ task.event }}</td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr><td colspan="3" class="text-center text-muted">No volunteer activities</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Change Password -->
+                <div class="tab-pane fade" id="password">
+                    <div class="card shadow-sm mb-4 p-3">
+                        <form method="POST" action="{% url 'accounts:change_password' %}">
+                            {% csrf_token %}
+                            <div class="mb-3"><label class="form-label">Current Password</label><input type="password" class="form-control" name="old_password"></div>
+                            <div class="mb-3"><label class="form-label">New Password</label><input type="password" class="form-control" name="new_password1"></div>
+                            <div class="mb-3"><label class="form-label">Confirm New Password</label><input type="password" class="form-control" name="new_password2"></div>
+                            <button type="submit" class="btn btn-primary">Change Password</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+var ctx = document.getElementById('donationChart').getContext('2d');
+var donationChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {{ donation_chart_labels|safe }},
+        datasets: [{ label: 'Donations (KSh)', data: {{ donation_chart_data|safe }}, backgroundColor: 'rgba(54, 162, 235, 0.6)' }]
+    },
+    options: { scales: { y: { beginAtZero: true } } }
+});
+
+// Mini Charts
+function createMiniChart(canvasId, labels, data, color){
+    new Chart(document.getElementById(canvasId), {
+        type: 'line',
+        data: { labels: labels, datasets: [{ data: data, borderColor: color, fill: false, tension: 0.3 }] },
+        options: { plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+    });
+}
+createMiniChart('donationMiniChart', {{ donation_mini_labels|safe }}, {{ donation_mini_data|safe }}, 'rgba(54, 162, 235,1)');
+createMiniChart('attendanceMiniChart', {{ attendance_mini_labels|safe }}, {{ attendance_mini_data|safe }}, 'rgba(75, 192, 192,1)');
+createMiniChart('volunteerMiniChart', {{ volunteer_mini_labels|safe }}, {{ volunteer_mini_data|safe }}, 'rgba(255, 206, 86,1)');
+</script>
+
+<style>
+.nav-tabs .nav-link.active { font-weight: 600; }
+.card .table { font-size: 0.9rem; }
+.badge { font-size: 0.8rem; }
+</style>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav id="sidebarMenu" class="col-lg-3 col-md-4 d-md-block bg-light sidebar collapse shadow-sm">
+            <div class="position-sticky p-3 text-center">
+                {% if user.member and user.member.profile_picture %}
+                    <img src="{{ user.member.profile_picture.url }}" class="rounded-circle mb-2" width="100" height="100" alt="Profile Picture">
+                {% else %}
+                    <i class="fas fa-user-circle fa-6x text-secondary mb-2"></i>
+                {% endif %}
+                <h5>{{ user.username }}</h5>
+                <p class="text-muted">{% if user.member %}{{ user.member.role.name }}{% else %}N/A{% endif %}</p>
+
+                <ul class="nav flex-column mt-3">
+                    <!-- ✅ use namespaced urls -->
+                    <li class="nav-item mb-1">
+                        <a class="nav-link btn btn-outline-primary w-100 mb-1" href="{% url 'accounts:dashboard' %}">
+                            <i class="fas fa-user me-2"></i> Profile
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a class="nav-link btn btn-outline-success w-100 mb-1" href="{% url 'accounts:donations' %}">
+                            <i class="fas fa-hand-holding-heart me-2"></i> My Donations
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a class="nav-link btn btn-outline-info w-100 mb-1 active" href="{% url 'accounts:attendance' %}">
+                            <i class="fas fa-calendar-check me-2"></i> Attendance
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a class="nav-link btn btn-outline-secondary w-100 mb-1" href="{% url 'accounts:events' %}">
+                            <i class="fas fa-calendar-alt me-2"></i> Events
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-lg-9 col-md-8 ms-sm-auto px-md-4">
+            <!-- Mobile menu button -->
+            <button class="btn btn-outline-secondary d-md-none mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                <i class="fas fa-bars"></i> Menu
+            </button>
+
+            <h3 class="mb-4">My Attendance</h3>
+
+            <!-- Filter Form -->
+            <div class="card shadow-sm mb-4 p-3">
+                <form method="GET" class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Year</label>
+                        <select name="year" class="form-select">
+                            <option value="">All</option>
+                            {% for y in years %}
+                                <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Month</label>
+                        <select name="month" class="form-select">
+                            <option value="">All</option>
+                            {% for m_num, m_name in months %}
+                                <option value="{{ m_num }}" {% if selected_month == m_num %}selected{% endif %}>{{ m_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Stats Card -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card shadow-sm text-center p-3">
+                        <h6>Total Attendances</h6>
+                        <h3>{{ total_attended }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Chart -->
+            <div class="card shadow-sm mb-4 p-3">
+                <h5>Attendance Trends</h5>
+                <canvas id="attendanceChart" height="150"></canvas>
+            </div>
+
+            <!-- Attendance Table -->
+            <div class="card shadow-sm mb-4 p-3">
+                <h5>Attendance Records</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Event</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in records %}
+                                <tr>
+                                    <td>{{ record.date|date:"d M Y" }}</td>
+                                    <td>{{ record.event_name|default:"N/A" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="2" class="text-center text-muted">No attendance records found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- External Scripts -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const ctx = document.getElementById('attendanceChart').getContext('2d');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {{ chart_labels|safe }},
+        datasets: [{
+            label: 'Attendances per Day',
+            data: {{ chart_data|safe }},
+            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, stepSize: 1 } }
+    }
+});
+</script>
+
+<style>
+.badge { font-size: 0.8rem; }
+</style>
+{% endblock %}

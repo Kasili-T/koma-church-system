@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5 mb-5">
+
+    <!-- Header & Download Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>📊 Reports & Analytics ({{ current_year }})</h2>
+        <a href="{% url 'accounts:reports_pdf' %}" class="btn btn-outline-success">
+            ⬇️ Download PDF Report
+        </a>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3 text-center border-0 bg-primary text-white">
+                <h6>💰 Total Donations</h6>
+                <h3>Ksh {{ total_donations|default:0|floatformat:0 }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3 text-center border-0 bg-success text-white">
+                <h6>👥 Members</h6>
+                <h3>{{ total_members|default:0 }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3 text-center border-0 bg-warning text-dark">
+                <h6>🤝 Volunteers</h6>
+                <h3>{{ total_volunteers|default:0 }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3 text-center border-0 bg-info text-white">
+                <h6>📅 Events</h6>
+                <h3>{{ total_events|default:0 }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row g-4">
+        <!-- Monthly Donations -->
+        <div class="col-md-6">
+            <div class="card shadow-sm p-3 border-0">
+                <h5 class="text-center mb-3">💰 Monthly Donations</h5>
+                <canvas id="donationChart" height="150"></canvas>
+            </div>
+        </div>
+
+        <!-- Event Attendance -->
+        <div class="col-md-6">
+            <div class="card shadow-sm p-3 border-0">
+                <h5 class="text-center mb-3">🧍 Event Attendance</h5>
+                <canvas id="attendanceChart" height="150"></canvas>
+            </div>
+        </div>
+
+        <!-- Volunteers by Department -->
+        <div class="col-md-6">
+            <div class="card shadow-sm p-3 border-0">
+                <h5 class="text-center mb-3">🤝 Volunteers by Department</h5>
+                <canvas id="volunteerChart" height="150"></canvas>
+            </div>
+        </div>
+
+        <!-- Member Growth -->
+        <div class="col-md-6">
+            <div class="card shadow-sm p-3 border-0">
+                <h5 class="text-center mb-3">👥 Member Growth</h5>
+                <canvas id="memberChart" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Safely parse Django data
+    const donationMonths = {{ donation_months|safe|default:"[]" }};
+    const donationTotals = {{ donation_totals|safe|default:"[]" }};
+    const attendanceLabels = {{ attendance_labels|safe|default:"[]" }};
+    const attendanceData = {{ attendance_data|safe|default:"[]" }};
+    const volunteerDepartments = {{ volunteer_departments|safe|default:"[]" }};
+    const volunteerCounts = {{ volunteer_counts|safe|default:"[]" }};
+    const memberMonths = {{ member_growth_months|safe|default:"[]" }};
+    const memberCounts = {{ member_growth_counts|safe|default:"[]" }};
+
+    // Donations Chart
+    new Chart(document.getElementById('donationChart'), {
+        type: 'bar',
+        data: {
+            labels: donationMonths,
+            datasets: [{
+                label: 'Donations (Ksh)',
+                data: donationTotals,
+                backgroundColor: '#28a745'
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    // Attendance Chart
+    new Chart(document.getElementById('attendanceChart'), {
+        type: 'line',
+        data: {
+            labels: attendanceLabels,
+            datasets: [{
+                label: 'Attendance Count',
+                data: attendanceData,
+                borderColor: '#007bff',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    // Volunteers by Department
+    new Chart(document.getElementById('volunteerChart'), {
+        type: 'pie',
+        data: {
+            labels: volunteerDepartments,
+            datasets: [{
+                data: volunteerCounts,
+                backgroundColor: [
+                    '#17a2b8', '#ffc107', '#28a745', '#dc3545', '#6610f2'
+                ]
+            }]
+        },
+        options: { responsive: true }
+    });
+
+    // Member Growth Chart
+    new Chart(document.getElementById('memberChart'), {
+        type: 'line',
+        data: {
+            labels: memberMonths,
+            datasets: [{
+                label: 'New Members',
+                data: memberCounts,
+                borderColor: '#6610f2',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+});
+</script>
+{% endblock %}

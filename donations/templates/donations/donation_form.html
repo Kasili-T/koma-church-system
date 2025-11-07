@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4">
+                <h3 class="text-center mb-4">💰 Make a Donation</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Donation Category -->
+                    <div class="mb-3">
+                        <label for="id_category" class="form-label">Donation Category *</label>
+                        {{ form.category|add_class:"form-select" }}
+                    </div>
+
+                    <!-- Full Name -->
+                    <div class="mb-3">
+                        <label for="id_donor_name" class="form-label">Full Name</label>
+                        {{ form.donor_name|add_class:"form-control" }}
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label">Email</label>
+                        {{ form.email|add_class:"form-control" }}
+                    </div>
+
+                    <!-- Amount -->
+                    <div class="mb-3">
+                        <label for="id_amount" class="form-label">Amount (Ksh)</label>
+                        {{ form.amount|add_class:"form-control" }}
+                        <small class="text-muted">Enter the donation amount in Ksh.</small>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="mb-3">
+                        <label for="id_payment_method" class="form-label">Payment Method</label>
+                        {{ form.payment_method|add_class:"form-select" }}
+                    </div>
+
+                    <!-- Phone Number (for Mpesa) -->
+                    <div class="mb-3">
+                        <label for="phone_number" class="form-label">Phone Number</label>
+                        <input type="text" id="phone_number" name="phone_number" class="form-control"
+                               placeholder="2547XXXXXXXX" pattern="254[0-9]{8}" required>
+                        <small class="text-muted">Enter your phone number in format 2547XXXXXXXX.</small>
+                    </div>
+
+                    <!-- Transaction ID -->
+                    <div class="mb-3">
+                        <label for="id_transaction_id" class="form-label">Transaction ID</label>
+                        {{ form.transaction_id|add_class:"form-control" }}
+                        <small class="text-muted">Enter the transaction reference provided after payment.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-3">Donate Now</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Optional: Add form-field highlighting or validation -->
+<style>
+.card {
+    border-radius: 12px;
+}
+</style>
+{% endblock %}

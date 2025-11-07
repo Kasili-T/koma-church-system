@@ -1,0 +1,92 @@
+{% extends "admin_base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2 class="mb-3">🤝 Volunteers Management</h2>
+    <p class="text-muted">This page allows you to manage volunteer applications, approve/reject volunteers, and track their departments.</p>
+
+    <!-- ---------------- Search ---------------- -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search by name or department">
+        </div>
+    </div>
+
+    <!-- ---------------- Volunteer Table ---------------- -->
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered align-middle" id="volunteerTable">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Department / Opportunity</th>
+                    <th>Availability</th>
+                    <th>Applied On</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in volunteers %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ v.user.get_full_name|default:v.user.username }}</td>
+                    <td>{{ v.opportunity.department }}</td>
+                    <td>{{ v.availability }}</td>
+                    <td>{{ v.applied_on|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        {% if v.status == "Pending" %}
+                            <span class="badge bg-warning text-dark px-3 py-2">{{ v.status }}</span>
+                        {% elif v.status == "Approved" %}
+                            <span class="badge bg-success px-3 py-2">{{ v.status }}</span>
+                        {% else %}
+                            <span class="badge bg-danger px-3 py-2">{{ v.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if v.status == 'Pending' %}
+                            <a href="{% url 'approve_volunteer' v.id %}" class="btn btn-sm btn-success action-btn me-2">Approve</a>
+                            <a href="{% url 'reject_volunteer' v.id %}" class="btn btn-sm btn-danger action-btn">Reject</a>
+                        {% else %}
+                            <span class="text-muted">No actions</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-3">No volunteer applications yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ---------------- Scripts ---------------- -->
+<script>
+    // ---------------- Search Filter ----------------
+    const searchInput = document.getElementById('searchInput');
+    const tableRows = document.querySelectorAll('#volunteerTable tbody tr');
+
+    searchInput.addEventListener('keyup', function() {
+        const query = this.value.toLowerCase();
+        tableRows.forEach(row => {
+            const name = row.cells[1].innerText.toLowerCase();
+            const dept = row.cells[2].innerText.toLowerCase();
+            row.style.display = (name.includes(query) || dept.includes(query)) ? '' : 'none';
+        });
+    });
+
+    // ---------------- Confirmation Prompt ----------------
+    const actionButtons = document.querySelectorAll('.action-btn');
+    actionButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const action = this.innerText.toLowerCase();
+            if (!confirm(`Are you sure you want to ${action} this volunteer?`)) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+
+{% endblock %}

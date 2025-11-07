@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+
+    <h2 class="mb-2">🤝 Volunteer</h2>
+    <p class="text-muted mb-4">Join and manage your volunteer activities here.</p>
+
+    <!-- ---------------- Common Volunteer Departments ---------------- -->
+    <div class="card shadow-sm mb-4 p-3">
+        <h4 class="mb-3">1️⃣ Common Volunteer Departments/Roles</h4>
+        <div class="row g-3">
+            {% comment %} List of common roles with "Apply Now" button {% endcomment %}
+            {% for role, description in common_roles.items %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm h-100 d-flex flex-column p-3">
+                        <h5 class="card-title">{{ role }}</h5>
+                        <p class="card-text text-muted">{{ description }}</p>
+                        <a href="{% url 'apply_volunteer' %}?department={{ role }}" class="btn btn-primary btn-sm mt-auto">Apply Now</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ---------------- User Application Status ---------------- -->
+    <div class="card shadow-sm mb-4 p-3">
+        <h4 class="mb-3">Your Current Application</h4>
+        {% if volunteer %}
+            <div class="alert alert-info">
+                <strong>Status:</strong> {{ volunteer.status }}
+            </div>
+
+            {% if volunteer.status == "Approved" %}
+                <p class="fw-bold text-success">🎉 Approved to serve in <strong>{{ volunteer.department }}</strong>.</p>
+                <p>Check with your department for schedule and tasks.</p>
+            {% elif volunteer.status == "Rejected" %}
+                <p class="fw-bold text-danger">❌ Application for <strong>{{ volunteer.department }}</strong> was rejected.</p>
+                <a href="{% url 'apply_volunteer' %}" class="btn btn-outline-primary mt-2">Apply Again</a>
+            {% else %}
+                <p class="fw-bold text-warning">⏳ Your application is awaiting admin approval.</p>
+            {% endif %}
+        {% else %}
+            <p class="text-muted">You have not applied as a volunteer yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- ---------------- Available Volunteer Opportunities ---------------- -->
+    {% if opportunities %}
+        <div class="mb-4">
+            <h4 class="mb-3">Available Volunteer Opportunities</h4>
+            <div class="row g-3">
+                {% for op in opportunities %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card shadow-sm h-100 d-flex flex-column p-3">
+                            <h5 class="card-title">{{ op.department }}</h5>
+                            <p class="card-text text-muted mb-1">{{ op.description|truncatechars:100 }}</p>
+                            <p class="mb-1"><strong>Availability:</strong> {{ op.required_availability }}</p>
+                            <p class="mb-2"><strong>Slots:</strong> {{ op.slots }}</p>
+                            <a href="{% url 'apply_volunteer' %}?department={{ op.department }}" class="btn btn-primary btn-sm mt-auto">Apply Now</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-warning">
+            No volunteer opportunities are available at the moment.
+        </div>
+    {% endif %}
+
+    <!-- ---------------- Application History ---------------- -->
+    <div>
+        <h4 class="mb-3">Your Volunteer Applications</h4>
+        {% if applications %}
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Department</th>
+                            <th>Availability</th>
+                            <th>Status</th>
+                            <th>Applied On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                            <tr>
+                                <td>{{ app.department }}</td>
+                                <td>{{ app.availability }}</td>
+                                <td>
+                                    {% if app.status == "Pending" %}
+                                        <span class="badge bg-warning text-dark">{{ app.status }}</span>
+                                    {% elif app.status == "Approved" %}
+                                        <span class="badge bg-success">{{ app.status }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{{ app.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ app.applied_on|date:"Y-m-d H:i" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted">You have no past applications.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

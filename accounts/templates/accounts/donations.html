@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav id="sidebarMenu" class="col-lg-3 col-md-4 d-md-block bg-light sidebar collapse shadow-sm">
+            <div class="position-sticky p-3 text-center">
+                {% if user.member and user.member.profile_picture %}
+                    <img src="{{ user.member.profile_picture.url }}" class="rounded-circle mb-2" width="100" height="100" alt="Profile Picture">
+                {% else %}
+                    <i class="fas fa-user-circle fa-6x text-secondary mb-2"></i>
+                {% endif %}
+                <h5>{{ user.username }}</h5>
+                <p class="text-muted">{% if user.member %}{{ user.member.role.name }}{% else %}N/A{% endif %}</p>
+
+                <ul class="nav flex-column mt-3">
+                    <li class="nav-item mb-1">
+                        <a class="nav-link btn btn-outline-primary w-100 mb-1" href="{% url 'accounts:profile' %}">
+                            <i class="fas fa-user me-2"></i> Profile
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a class="nav-link btn btn-outline-success w-100 mb-1 {% if request.resolver_match.url_name == 'donations' %}active{% endif %}" href="{% url 'accounts:donations' %}">
+                            <i class="fas fa-hand-holding-heart me-2"></i> My Donations
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a class="nav-link btn btn-outline-info w-100 mb-1" href="{% url 'accounts:attendance' %}">
+                            <i class="fas fa-calendar-check me-2"></i> Attendance
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a class="nav-link btn btn-outline-secondary w-100 mb-1" href="{% url 'accounts:events' %}">
+                            <i class="fas fa-calendar-alt me-2"></i> Events
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a class="nav-link btn btn-outline-warning w-100 mb-1" href="{% url 'accounts:make_donation' %}">
+                            <i class="fas fa-donate me-2"></i> Contribute
+                        </a>
+                    </li>
+                    <!-- ✅ Chat -->
+                    <li class="nav-item mb-1">
+                        <a class="nav-link btn btn-outline-primary w-100 mb-1" href="{% url 'chat:chat_room' room_name='general' %}">
+                            <i class="fas fa-comments me-2"></i> Chat
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a class="nav-link btn btn-outline-danger w-100 mb-1" href="{% url 'accounts:logout' %}">
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-lg-9 col-md-8 ms-sm-auto px-md-4">
+            <!-- Mobile menu button -->
+            <button class="btn btn-outline-secondary d-md-none mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                <i class="fas fa-bars"></i> Menu
+            </button>
+
+            <h3 class="mb-4">My Donations</h3>
+
+            <!-- Filter Form -->
+            <div class="card shadow-sm mb-4 p-3">
+                <form method="GET" class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Year</label>
+                        <select name="year" class="form-select">
+                            <option value="">All</option>
+                            {% for y in years %}
+                                <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Month</label>
+                        <select name="month" class="form-select">
+                            <option value="">All</option>
+                            {% for m_num, m_name in months %}
+                                <option value="{{ m_num }}" {% if selected_month == m_num %}selected{% endif %}>{{ m_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Top Stats Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card shadow-sm text-center p-3">
+                        <h6>Total Donations</h6>
+                        <h3>KSh {{ total_donations|default:"0"|intcomma }}</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm text-center p-3">
+                        <h6>Completed</h6>
+                        <h3>{{ completed_count|default:"0" }}</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm text-center p-3">
+                        <h6>Pending</h6>
+                        <h3>{{ pending_count|default:"0" }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Donation Chart -->
+            <div class="card shadow-sm mb-4 p-3">
+                <h5>Donation Trends</h5>
+                <canvas id="donationChart" height="150"></canvas>
+            </div>
+
+            <!-- Donation History Table -->
+            <div class="card shadow-sm mb-4 p-3">
+                <h5>Recent Donations</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr><th>Date</th><th>Amount</th><th>Event</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for donation in donations %}
+                                <tr>
+                                    <td>{{ donation.date|date:"d M Y" }}</td>
+                                    <td>KSh {{ donation.amount|intcomma }}</td>
+                                    <td>{{ donation.event.name }}</td>
+                                    <td>
+                                        {% if donation.status == "Completed" %}
+                                            <span class="badge bg-success">{{ donation.status }}</span>
+                                        {% elif donation.status == "Pending" %}
+                                            <span class="badge bg-warning text-dark">{{ donation.status }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ donation.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="4" class="text-center text-muted">No donations yet</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Scripts -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const statusColors = {
+        "Completed": "rgba(54, 162, 235, 0.7)",
+        "Pending": "rgba(255, 206, 86, 0.7)",
+        "Failed": "rgba(220, 53, 69, 0.7)"
+    };
+
+    const barColors = [
+        {% for donation in donations %}
+            {% if donation.status == "Completed" %}
+                statusColors.Completed,
+            {% elif donation.status == "Pending" %}
+                statusColors.Pending,
+            {% else %}
+                statusColors.Failed,
+            {% endif %}
+        {% endfor %}
+    ];
+
+    const ctx = document.getElementById('donationChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ donation_chart_labels|safe }},
+            datasets: [{
+                label: 'Donations (KSh)',
+                data: {{ donation_chart_data|safe }},
+                backgroundColor: barColors,
+                borderColor: barColors.map(c => c.replace("0.7","1")),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+</script>
+
+<style>
+    .badge { font-size: 0.8rem; }
+</style>
+{% endblock %}

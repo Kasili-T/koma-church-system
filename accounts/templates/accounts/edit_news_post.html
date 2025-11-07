@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Edit Announcement</h3>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-success">Save Changes</button>
+  <a href="{% url 'accounts:news_feed' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazing Grace Chapel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+        }
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: #343a40;
+            color: #fff;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar h3 {
+            padding: 20px;
+            margin: 0;
+            text-align: center;
+            background: #23272b;
+        }
+        .sidebar a {
+            color: #ccc;
+            padding: 12px 20px;
+            display: block;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background: #495057;
+            color: #fff;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .logout-btn {
+            margin-top: auto;
+            padding: 15px;
+            text-align: center;
+        }
+        /* Center login & signup when no sidebar */
+        .auth-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        {% if user.is_authenticated %}
+        <!-- Sidebar (only if logged in) -->
+        <div class="sidebar">
+            <h3>Amazing Grace</h3>
+
+            <a href="{% url 'accounts:profile' %}"><i class="fas fa-user"></i> Profile</a>
+            <a href="{% url 'accounts:donations' %}"><i class="fas fa-hand-holding-heart"></i> My Donations</a>
+            <a href="{% url 'accounts:attendance' %}"><i class="fas fa-calendar-check"></i> Attendance</a>
+            <a href="{% url 'accounts:events' %}"><i class="fas fa-calendar-alt"></i> Events</a>
+            <a href="{% url 'chat:chat_rooms' %}"><i class="fas fa-comments"></i> Chat</a>
+            <a href="{% url 'accounts:forums' %}"><i class="fas fa-users"></i> Forums</a>
+            <a href="{% url 'accounts:make_donation' %}"><i class="fas fa-donate"></i> Make Contribution</a>
+            <a href="{% url 'accounts:volunteer' %}"><i class="fas fa-hands-helping"></i> Volunteer</a>
+            <a href="{% url 'accounts:prayer_requests' %}"><i class="fas fa-praying-hands"></i> Prayer Requests</a>
+            <a href="{% url 'accounts:news_feed' %}"><i class="fas fa-newspaper"></i> News Feed</a>
+           <a href="{% url 'sermons:sermon_list' %}"><i class="fas fa-bible"></i> Sermons</a>
+
+
+          <a href="{% url 'media_app:media_list' %}" class="dashboard-btn">🎞️ Media Gallery</a>
+
+
+
+            <div class="logout-btn">
+                <a href="{% url 'accounts:logout' %}" class="btn btn-danger w-100">Logout</a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Main Content -->
+        <div class="main-content {% if not user.is_authenticated %}auth-page{% endif %}">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

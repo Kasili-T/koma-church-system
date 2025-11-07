@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow p-4">
+  <h3>💳 My Contributions</h3>
+  <p><strong>Total:</strong> {{ total }}</p>
+  <a href="{% url 'make_donation' %}" class="btn btn-success">🎁 Make a Donation</a>
+  <hr>
+  <ul>
+    {% for d in donations %}
+      <li>{{ d.date }} - {{ d.amount }} ({{ d.method }})</li>
+    {% empty %}
+      <li>No donations yet.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

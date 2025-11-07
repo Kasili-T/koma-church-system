@@ -1,0 +1,16 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block title %}Create News Post{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 700px;">
+    <h2 class="mb-4">Create News Post</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Save Announcement</button>
+        <a href="{% url 'accounts:admin_news_feed' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

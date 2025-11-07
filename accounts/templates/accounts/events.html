@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav id="sidebarMenu" class="col-lg-3 col-md-4 d-md-block bg-light sidebar collapse shadow-sm">
+            <div class="position-sticky p-3 text-center">
+                {% if user.member and user.member.profile_picture %}
+                    <img src="{{ user.member.profile_picture.url }}" class="rounded-circle mb-2" width="100" height="100" alt="Profile Picture">
+                {% else %}
+                    <i class="fas fa-user-circle fa-6x text-secondary mb-2"></i>
+                {% endif %}
+                <h5>{{ user.username }}</h5>
+                <p class="text-muted">
+                    {% if user.member %}
+                        {{ user.member.role.name }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </p>
+
+                <ul class="nav flex-column mt-3">
+                    <!-- Dashboard -->
+                    <li class="nav-item mb-1">
+                        <a class="nav-link btn btn-outline-dark w-100 mb-1" href="{% url 'accounts:dashboard' %}">
+                            <i class="fas fa-home me-2"></i> Dashboard
+                        </a>
+                    </li>
+                    <!-- Profile -->
+                    <li class="nav-item mb-1">
+                        <a class="nav-link btn btn-outline-primary w-100 mb-1" href="{% url 'accounts:profile' %}">
+                            <i class="fas fa-user me-2"></i> Profile
+                        </a>
+                    </li>
+                    <!-- Donations -->
+                    <li class="nav-item mb-1">
+                        <a class="nav-link btn btn-outline-success w-100 mb-1" href="{% url 'accounts:donations' %}">
+                            <i class="fas fa-hand-holding-heart me-2"></i> My Donations
+                        </a>
+                    </li>
+                    <!-- Attendance -->
+                    <li class="nav-item mb-1">
+                        <a class="nav-link btn btn-outline-info w-100 mb-1" href="{% url 'accounts:attendance' %}">
+                            <i class="fas fa-calendar-check me-2"></i> Attendance
+                        </a>
+                    </li>
+                    <!-- Events -->
+                    <li class="nav-item mb-1">
+                        <a class="nav-link btn btn-outline-secondary w-100 mb-1 active" href="{% url 'accounts:events' %}">
+                            <i class="fas fa-calendar-alt me-2"></i> Events
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-lg-9 col-md-8 ms-sm-auto px-md-4">
+            <!-- Mobile menu button -->
+            <button class="btn btn-outline-secondary d-md-none mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+                <i class="fas fa-bars"></i> Menu
+            </button>
+
+            <h3 class="mb-4">Events</h3>
+
+            <!-- Filter Form -->
+            <div class="card shadow-sm mb-4 p-3">
+                <form method="GET" class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Year</label>
+                        <select name="year" class="form-select">
+                            <option value="">All</option>
+                            {% for y in years %}
+                                <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Month</label>
+                        <select name="month" class="form-select">
+                            <option value="">All</option>
+                            {% for m_num, m_name in months %}
+                                <option value="{{ m_num }}" {% if selected_month == m_num %}selected{% endif %}>{{ m_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Upcoming Events Table -->
+            <div class="card shadow-sm mb-4 p-3">
+                <h5 class="mb-3">Upcoming Events</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Name</th>
+                                <th>Location</th>
+                                <th>Map</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in events %}
+                                <tr>
+                                    <td>{{ event.date|date:"d M Y" }}</td>
+                                    <td>{{ event.name }}</td>
+                                    <td>{{ event.location|default:"-" }}</td>
+                                    <td>
+                                        {% if event.latitude and event.longitude %}
+                                            <div id="map-{{ forloop.counter }}" class="map"></div>
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No upcoming events found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- External Scripts -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB-3l8SYX9LO3yH8KjGYdJEYR-xtHDjRtc"></script>
+
+<script>
+{% for event in events %}
+    {% if event.latitude and event.longitude %}
+        var map{{ forloop.counter }} = new google.maps.Map(document.getElementById('map-{{ forloop.counter }}'), {
+            center: {lat: {{ event.latitude }}, lng: {{ event.longitude }}},
+            zoom: 15
+        });
+        new google.maps.Marker({
+            position: {lat: {{ event.latitude }}, lng: {{ event.longitude }}},
+            map: map{{ forloop.counter }},
+            title: "{{ event.name }}"
+        });
+    {% endif %}
+{% endfor %}
+</script>
+
+<style>
+.map {
+    width: 100%;
+    height: 150px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+</style>
+{% endblock %}

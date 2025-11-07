@@ -1,0 +1,26 @@
+{% extends "accounts/base.html" %}
+{% block content %}
+<h2>All Prayer Requests</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Title</th>
+            <th>Message</th>
+            <th>Date</th>
+            <th>Answered</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for prayer in requests %}
+            <tr>
+                <td>{{ prayer.user.username }}</td>
+                <td>{{ prayer.title }}</td>
+                <td>{{ prayer.message }}</td>
+                <td>{{ prayer.created_at|date:"d M Y H:i" }}</td>
+                <td>{{ prayer.answered }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "accounts/base.html" %}
+{% block content %}
+<h2>Media Gallery</h2>
+<ul>
+    {% for item in media_items %}
+        <li>
+            {{ item.title }} ({{ item.media_type }}) - Uploaded: {{ item.uploaded_at|date:"d M Y" }}
+            {% if item.media_type == 'photo' %}
+                <img src="{{ item.file.url }}" alt="{{ item.title }}" style="max-width:200px;">
+            {% else %}
+                <a href="{{ item.file.url }}" target="_blank">View/Download</a>
+            {% endif %}
+        </li>
+    {% empty %}
+        <li>No media items yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

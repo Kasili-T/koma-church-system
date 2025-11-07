@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <h2>🤝 Volunteer Portal</h2>
+    <p>Welcome to the volunteer section! Explore available opportunities and get involved in church activities.</p>
+
+    <a href="{% url 'volunteers:apply_volunteer' %}" class="btn btn-success mt-3">Apply to Volunteer</a>
+</div>
+{% endblock %}

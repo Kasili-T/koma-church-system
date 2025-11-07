@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3 class="mb-3 text-center">🕒 My Attendance</h3>
+
+    <!-- Filters -->
+    <form method="get" class="row g-3 mb-4 justify-content-center">
+        <div class="col-md-3">
+            <label for="year" class="form-label">Year</label>
+            <select id="year" name="year" class="form-select" onchange="this.form.submit()">
+                <option value="">All</option>
+                {% for y in years %}
+                    <option value="{{ y }}" {% if request.GET.year == y|stringformat:'s' %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="month" class="form-label">Month</label>
+            <select id="month" name="month" class="form-select" onchange="this.form.submit()">
+                <option value="">All</option>
+                {% for key, value in months.items %}
+                    <option value="{{ key }}" {% if request.GET.month == key|stringformat:'s' %}selected{% endif %}>{{ value }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4 text-center">
+        <div class="col-md-4 offset-md-4">
+            <div class="card shadow-sm border-success">
+                <div class="card-body">
+                    <h5 class="card-title">Total Attendances</h5>
+                    <h3 class="text-success fw-bold">{{ total_attendances }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Trends Chart -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title text-center mb-3">📈 Attendance Trends</h5>
+            <canvas id="attendanceChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- Attendance Records Table -->
+    <div class="card shadow-sm p-3">
+        <h5 class="mb-3">Attendance Records</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Event</th>
+                        <th>Status</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record.date }}</td>
+                        <td>{{ record.event.title }}</td>
+                        <td>
+                            {% if record.status == 'Present' %}
+                                <span class="badge bg-success">{{ record.status }}</span>
+                            {% elif record.status == 'Absent' %}
+                                <span class="badge bg-danger">{{ record.status }}</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">{{ record.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ record.remarks|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">No attendance records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('attendanceChart').getContext('2d');
+    const attendanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [{
+                label: 'Attendance',
+                data: {{ chart_data|safe }},
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40,167,69,0.2)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: 'Attendances' }},
+                x: { title: { display: true, text: 'Month' }}
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <!-- Events Button -->
+    <div class="mb-3 text-center">
+        <button id="eventsButton" class="btn btn-success">📅 Show / Hide Events</button>
+    </div>
+
+    <!-- Events Section (Hidden by default) -->
+    <div id="eventsSection" class="card shadow-sm p-4">
+
+        <h2 class="text-center mb-4">📅 Church Events</h2>
+
+        <!-- Filters -->
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-3">
+                <label for="year" class="form-label">Year</label>
+                <select name="year" id="year" class="form-select">
+                    <option value="">All</option>
+                    {% for y in years %}
+                        <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="month" class="form-label">Month</label>
+                <select name="month" id="month" class="form-select">
+                    <option value="">All</option>
+                    {% for num, name in months %}
+                        <option value="{{ num }}" {% if selected_month == num %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="type" class="form-label">Event Type</label>
+                <select name="type" id="type" class="form-select">
+                    <option value="upcoming" {% if selected_type == "upcoming" %}selected{% endif %}>Upcoming</option>
+                    <option value="past" {% if selected_type == "past" %}selected{% endif %}>Past</option>
+                </select>
+            </div>
+
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
+
+        <!-- Events List -->
+        {% if events %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Title</th>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th>Description</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                    <tr>
+                        <td><strong>{{ event.title }}</strong></td>
+                        <td>{{ event.date|date:"M d, Y H:i" }}</td>
+                        <td>{{ event.location }}</td>
+                        <td>{{ event.description|truncatechars:60 }}</td>
+                        <td class="text-center">
+                            {% if user.is_authenticated %}
+                                {% if user.is_staff %}
+                                    <a href="{% url 'attendance:manage_event_attendance' event.id %}" class="btn btn-outline-primary btn-sm">
+                                        Manage Attendance
+                                    </a>
+                                {% elif event.id in registered_events %}
+                                    <span class="badge bg-success px-3 py-2">Registered</span>
+                                {% else %}
+                                    <a href="{% url 'events:register_event' event.id %}" class="btn btn-outline-primary btn-sm">
+                                        Register
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary btn-sm">
+                                    Login to Register
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <p class="text-muted fs-5">No events found for the selected filters.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Styles -->
+<style>
+#eventsSection {
+    display: none; /* hidden by default */
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease;
+}
+</style>
+
+<!-- Script -->
+<script>
+const eventsButton = document.getElementById('eventsButton');
+const eventsSection = document.getElementById('eventsSection');
+
+eventsButton.addEventListener('click', () => {
+    if (eventsSection.style.display === 'none' || eventsSection.style.display === '') {
+        eventsSection.style.display = 'block';
+        setTimeout(() => { eventsSection.style.maxHeight = eventsSection.scrollHeight + "px"; }, 10);
+    } else {
+        eventsSection.style.maxHeight = "0";
+        setTimeout(() => { eventsSection.style.display = 'none'; }, 500);
+    }
+});
+</script>
+{% endblock %}

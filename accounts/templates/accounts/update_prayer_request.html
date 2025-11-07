@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h3>Update Prayer Request</h3>
+    <form method="POST" class="card p-4 shadow-sm mt-3">
+        {% csrf_token %}
+
+        <!-- Title (readonly) -->
+        <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-control" value="{{ prayer_request.title }}" readonly>
+        </div>
+
+        <!-- Team Assigned -->
+        <div class="mb-3">
+            <label class="form-label">Team Assigned</label>
+            <select name="team_assigned" class="form-select">
+                <option value="">-- Select Prayer Team --</option>
+                {% for team in prayer_teams %}
+                    <option value="{{ team.id }}"
+                        {% if prayer_request.team_assigned and prayer_request.team_assigned.id == team.id %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ team.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Status -->
+        <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select">
+                {% for choice, label in prayer_request._meta.get_field('status').choices %}
+                    <option value="{{ choice }}" {% if choice == prayer_request.status %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Buttons -->
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{% url 'accounts:admin_prayer_requests' %}" class="btn btn-outline-secondary">Back</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

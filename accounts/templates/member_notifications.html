@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h3 class="mb-3">🔔 My Notifications</h3>
+
+  {% if notifications %}
+    {% for n in notifications %}
+      <div class="alert {% if n.is_read %}alert-secondary{% else %}alert-info{% endif %}">
+        <strong>{{ n.title }}</strong><br>
+        {{ n.message }}<br>
+        <small class="text-muted">{{ n.date_sent|date:"M d, Y H:i" }}</small>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="text-muted">No notifications yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

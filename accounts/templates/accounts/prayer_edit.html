@@ -1,0 +1,12 @@
+{% extends "accounts/base.html" %}
+{% block content %}
+<div class="container my-5" style="max-width:720px;">
+  <h3>Edit Prayer Request</h3>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn btn-secondary" href="{% url 'accounts:prayer_requests' %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+<h2>{{ title }}</h2>
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-success">Save</button>
+  <a href="{% url 'accounts:media_gallery_list' %}" class="btn btn-secondary">Cancel</a>
+</form>

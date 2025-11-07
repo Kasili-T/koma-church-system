@@ -1,0 +1,426 @@
+{% load static %}
+{% load tz %}
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% block title %}KOMA — Admin Dashboard{% endblock %}</title>
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --sidebar-width: 260px;
+      --brand: #0d6efd;
+    }
+    html,body { height:100%; }
+    body {
+      background:#f5f7fb;
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      overflow-x:hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      min-height: 100vh;
+      background: #14151a;
+      color: #cbd5e1;
+      transition: transform .25s ease;
+    }
+    .sidebar .brand {
+      color: #fff;
+      font-weight:700;
+    }
+    .sidebar a {
+      color: #cbd5e1;
+      padding: 10px 18px;
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      text-decoration:none;
+      border-radius:.5rem;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background: rgba(255,255,255,0.04);
+      color:#fff;
+    }
+    .sidebar .section-title {
+      padding: 12px 18px;
+      text-transform:uppercase;
+      font-size:.75rem;
+      color:#95a4b8;
+    }
+
+    /* Content */
+    .main {
+      margin-left: var(--sidebar-width);
+      transition: margin-left .25s ease;
+      min-height:100vh;
+    }
+
+    /* Mobile behavior */
+    @media (max-width: 991.98px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        transform: translateX(-110%);
+        z-index: 1050;
+      }
+      .sidebar.show {
+        transform: translateX(0);
+      }
+      .main {
+        margin-left: 0;
+      }
+      .overlay {
+        display: none;
+      }
+      .overlay.show {
+        display:block;
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.45);
+        z-index:1040;
+      }
+    }
+
+    /* Cards */
+    .stat-card { border-radius: .7rem; }
+    .stat-card .icon { font-size:1.6rem; opacity:.9; }
+
+    footer { color:#6b7280; padding:18px 0; text-align:center; font-size:.9rem; }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <!-- Mobile overlay -->
+  <div id="mobileOverlay" class="overlay"></div>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar d-lg-block">
+    <div class="p-3">
+      <div class="d-flex align-items-center mb-3">
+        <i class="bi bi-church fs-3 text-white me-2"></i>
+        <div>
+          <div class="brand">KOMA Admin</div>
+          <div class="small text-muted">Management Panel</div>
+        </div>
+      </div>
+
+      <div class="small mb-2">Welcome, <strong>{{ request.user.get_full_name|default:request.user.username }}</strong></div>
+
+      <nav class="mt-3">
+        <a class="d-flex align-items-center mb-1 active" href="{% url 'accounts:admin_dashboard' %}"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a>
+
+        <div class="section-title">Management</div>
+        <a href="{% url 'accounts:member_management' %}"><i class="bi bi-people-fill me-2"></i> Members</a>
+        <a href="{% url 'accounts:donations' %}"><i class="bi bi-cash-stack me-2"></i> Donations</a>
+        <a href="{% url 'accounts:event_management' %}"><i class="bi bi-calendar-event me-2"></i> Events</a>
+        <a href="{% url 'accounts:volunteer_management' %}"><i class="bi bi-person-check me-2"></i> Volunteers</a>
+
+        <div class="section-title mt-3">Content</div>
+        <a href="{% url 'accounts:news_feed' %}"><i class="bi bi-newspaper me-2"></i> News Feed</a>
+        <a href="{% url 'accounts:prayer_requests' %}"><i class="bi bi-journal-text me-2"></i> Prayer Requests</a>
+        <a href="{% url 'accounts:sermons' %}"><i class="bi bi-mic me-2"></i> Sermons</a>
+        <a href="{% url 'accounts:media_gallery' %}"><i class="bi bi-camera-reels me-2"></i> Media Gallery</a>
+
+        <div class="section-title mt-3">System</div>
+        <a href="{% url 'accounts:reports_analytics' %}"><i class="bi bi-graph-up me-2"></i> Reports & Analytics</a>
+        <a href="{% url 'accounts:send_notifications' %}"><i class="bi bi-megaphone me-2"></i> Send Notifications</a>
+        <a href="{% url 'accounts:attendance' %}"><i class="bi bi-clipboard-check me-2"></i> Attendance</a>
+      </nav>
+
+      <div class="mt-4 small text-muted">Quick Actions</div>
+      <div class="d-grid gap-2 mt-2">
+        <a href="{% url 'accounts:add_event' %}" class="btn btn-outline-primary btn-sm">+ New Event</a>
+        <a href="{% url 'accounts:create_news_post' %}" class="btn btn-outline-success btn-sm">+ New News</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div id="main" class="main">
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+      <div class="container-fluid px-3">
+        <div class="d-flex align-items-center">
+          <!-- Sidebar toggle (mobile) -->
+          <button id="btnSidebarToggle" class="btn btn-outline-secondary d-lg-none me-2" type="button">
+            <i class="bi bi-list"></i>
+          </button>
+          <h5 class="mb-0">Admin Dashboard</h5>
+        </div>
+
+        <div class="d-flex align-items-center ms-auto">
+          <div class="me-3 text-muted small">{{ request.user.get_username }}</div>
+          <div class="dropdown">
+            <a href="#" class="d-flex align-items-center text-decoration-none" id="accountMenu" data-bs-toggle="dropdown">
+              <img src="{% static 'img/avatar-placeholder.png' %}" alt="avatar" width="36" height="36" class="rounded-circle me-2">
+              <i class="bi bi-chevron-down"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">Profile & Settings</a></li>
+              <a class="dropdown-item" href="{% url 'accounts:logout' %}">Sign out</a>
+
+            </ul>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Content area -->
+    <main class="p-3">
+      <!-- Top KPIs -->
+      <section class="mb-4">
+        <div class="row g-3">
+          <div class="col-6 col-md-3">
+            <div class="card stat-card shadow-sm p-3 text-center">
+              <div class="d-flex justify-content-between">
+                <div class="text-start">
+                  <small class="text-muted">Members</small>
+                  <div class="h4 fw-bold">{{ members_count|default:0 }}</div>
+                </div>
+                <div class="icon text-primary align-self-center"><i class="bi bi-people-fill"></i></div>
+              </div>
+              <div class="mt-2">
+                <a href="{% url 'accounts:member_management' %}" class="btn btn-sm btn-outline-primary">Manage</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6 col-md-3">
+            <div class="card stat-card shadow-sm p-3 text-center">
+              <div class="d-flex justify-content-between">
+                <div class="text-start">
+                  <small class="text-muted">Total Donations</small>
+                  <div class="h4 fw-bold">Ksh {{ total_donations|default:0 }}</div>
+                </div>
+                <div class="icon text-success align-self-center"><i class="bi bi-cash-stack"></i></div>
+              </div>
+              <div class="mt-2">
+                <a href="{% url 'accounts:donations' %}" class="btn btn-sm btn-outline-success">Track</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6 col-md-3">
+            <div class="card stat-card shadow-sm p-3 text-center">
+              <div class="d-flex justify-content-between">
+                <div class="text-start">
+                  <small class="text-muted">Volunteers</small>
+                  <div class="h4 fw-bold">{{ volunteers_count|default:0 }}</div>
+                </div>
+                <div class="icon text-info align-self-center"><i class="bi bi-people"></i></div>
+              </div>
+              <div class="mt-2">
+                <a href="{% url 'accounts:volunteer_management' %}" class="btn btn-sm btn-outline-info">Manage</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6 col-md-3">
+            <div class="card stat-card shadow-sm p-3 text-center">
+              <div class="d-flex justify-content-between">
+                <div class="text-start">
+                  <small class="text-muted">Events</small>
+                  <div class="h4 fw-bold">{{ events_count|default:0 }}</div>
+                </div>
+                <div class="icon text-warning align-self-center"><i class="bi bi-calendar-event"></i></div>
+              </div>
+              <div class="mt-2">
+                <a href="{% url 'accounts:event_management' %}" class="btn btn-sm btn-outline-warning">View</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Management Hub -->
+      <section class="mb-4">
+        <h6 class="mb-3">Administrative Tools</h6>
+        <div class="row g-3">
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card p-3 shadow-sm h-100">
+              <h6>Reports & Analytics</h6>
+              <p class="small text-muted mb-2">Generate donation, attendance, and event reports.</p>
+              <a href="{% url 'accounts:reports_analytics' %}" class="btn btn-outline-dark btn-sm">Open Reports</a>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card p-3 shadow-sm h-100">
+              <h6>Send Notifications</h6>
+              <p class="small text-muted mb-2">Broadcast SMS, email or in-app notifications.</p>
+              <a href="{% url 'accounts:send_notifications' %}" class="btn btn-outline-dark btn-sm">Send</a>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card p-3 shadow-sm h-100">
+              <h6>Manage News Feed</h6>
+              <p class="small text-muted mb-2">Create and approve posts for the news feed.</p>
+             <a href="{% url 'accounts:create_news_post' %}" class="btn btn-outline-dark btn-sm">Manage</a>
+
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6 col-lg-4">
+  <div class="card p-3 shadow-sm h-100">
+    <h6>Prayer Requests</h6>
+    <p class="small text-muted mb-2">Review and assign prayer requests to teams.</p>
+    <a href="{% url 'accounts:admin_prayer_requests' %}" class="btn btn-outline-primary btn-sm">
+      Manage Prayer Requests
+    </a>
+  </div>
+</div>
+
+
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card p-3 shadow-sm h-100">
+              <h6>Sermons Management</h6>
+              <p class="small text-muted mb-2">Upload and manage sermon audio / notes.</p>
+              <a href="{% url 'accounts:sermons' %}" class="btn btn-outline-dark btn-sm">Manage</a>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card p-3 shadow-sm h-100">
+              <h6>Media Gallery</h6>
+              <p class="small text-muted mb-2">Organize photos and videos for public pages.</p>
+              <a href="{% url 'accounts:media_gallery' %}" class="btn btn-outline-dark btn-sm">Open Gallery</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Analytics Charts -->
+      <section class="mb-4">
+        <div class="row g-3">
+          <div class="col-12 col-lg-6">
+            <div class="card p-3 shadow-sm">
+              <h6>Donations — Last 6 months</h6>
+              <canvas id="donationsChart" height="120"></canvas>
+              <div class="small text-muted mt-2">Updated: {{ last_updated|default:"-" }}</div>
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-6">
+            <div class="card p-3 shadow-sm">
+              <h6>Member Registrations — Year to date</h6>
+              <canvas id="membersChart" height="120"></canvas>
+              <div class="small text-muted mt-2">Total this year: {{ members_count|default:0 }}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recent Admin Activity -->
+      <section class="mb-4">
+        <div class="card p-3 shadow-sm">
+          <h6>Recent Administrative Activity</h6>
+          <ul class="list-group list-group-flush mt-2">
+          {% for act in recent_activity|default_if_none:"" %}
+
+
+              <li class="list-group-item small">{{ act }}</li>
+            {% empty %}
+              <li class="list-group-item small text-muted">No recent admin activity.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </section>
+
+      <footer>
+       © {% now "Y" %} KOMA — Church Management System
+
+
+      </footer>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <script>
+    // Sidebar toggle (mobile)
+    const sidebar = document.getElementById('sidebar');
+    const btnToggle = document.getElementById('btnSidebarToggle');
+    const overlay = document.getElementById('mobileOverlay');
+    btnToggle && btnToggle.addEventListener('click', ()=> {
+      sidebar.classList.toggle('show');
+      overlay.classList.toggle('show');
+    });
+    overlay && overlay.addEventListener('click', ()=> {
+      sidebar.classList.remove('show');
+      overlay.classList.remove('show');
+    });
+
+    // === Chart.js setup ===
+    (function () {
+      // Donations chart (line) - data provided by view as arrays
+      const donationsLabels = {{ donation_months|default:"[]"|safe }};
+      const donationsValues = {{ donation_values|default:"[]"|safe }};
+
+      const ctxD = document.getElementById('donationsChart');
+      if (ctxD && donationsLabels.length) {
+        new Chart(ctxD, {
+          type: 'line',
+          data: {
+            labels: donationsLabels,
+            datasets: [{
+              label: 'Donations (Ksh)',
+              data: donationsValues,
+              borderColor: 'rgba(13,110,253,1)',
+              backgroundColor: 'rgba(13,110,253,0.12)',
+              fill: true,
+              tension: 0.4,
+              pointRadius: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+      }
+
+      // Members chart (bar)
+      const memberLabels = {{ member_months|default:"[]"|safe }};
+      const memberCounts = {{ member_counts|default:"[]"|safe }};
+      const ctxM = document.getElementById('membersChart');
+      if (ctxM && memberLabels.length) {
+        new Chart(ctxM, {
+          type: 'bar',
+          data: {
+            labels: memberLabels,
+            datasets: [{
+              label: 'New Members',
+              data: memberCounts,
+              backgroundColor: 'rgba(25,135,84,0.7)',
+              borderColor: 'rgba(25,135,84,1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+      }
+    })();
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

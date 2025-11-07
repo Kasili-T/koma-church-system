@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Media Gallery</h2>
+    <div class="row">
+        {% for item in items %}
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    {% if item.media_type == 'photo' %}
+                        <img src="{{ item.file.url }}" class="card-img-top" alt="Media">
+                    {% elif item.media_type == 'video' %}
+                        <video controls class="w-100">
+                            <source src="{{ item.file.url }}" type="video/mp4">
+                        </video>
+                    {% elif item.media_type == 'file' %}
+                        <a href="{{ item.file.url }}" download>Download File</a>
+                    {% endif %}
+                    <div class="card-body">
+                        <p class="card-text">{{ item.description }}</p>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p>No media available.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

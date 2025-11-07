@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Create Thread in {{ category.name }}</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Create Thread</button>
+</form>
+
+<a href="{% url 'forums:threads' category.id %}" class="btn btn-link mt-3">Back to Threads</a>
+{% endblock %}

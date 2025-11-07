@@ -1,0 +1,14 @@
+{% extends "accounts/base.html" %}
+{% block content %}
+<h2>{{ sermon.title }}</h2>
+<p>Speaker: {{ sermon.speaker }}</p>
+<p>Date: {{ sermon.date }}</p>
+<p>{{ sermon.description }}</p>
+
+{% if sermon.video_url %}
+    <p>Video: <a href="{{ sermon.video_url }}" target="_blank">Watch here</a></p>
+{% endif %}
+{% if sermon.audio_url %}
+    <p>Audio: <a href="{{ sermon.audio_url }}" target="_blank">Listen here</a></p>
+{% endif %}
+{% endblock %}

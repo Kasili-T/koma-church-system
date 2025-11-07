@@ -1,0 +1,29 @@
+{% extends 'accounts/base.html' %}
+{% block title %}My Attendance{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>🕒 My Attendance</h2>
+    {% if attendance_records %}
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Event</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in attendance_records %}
+                    <tr>
+                        <td>{{ record.date_attended|date:"M d, Y" }}</td>
+                        <td>{{ record.event.name }}</td>
+                        <td>{{ record.status|default:"Present" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>You have no attendance records yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

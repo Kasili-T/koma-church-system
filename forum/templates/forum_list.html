@@ -1,0 +1,13 @@
+<h1>Forums</h1>
+
+{% if forums %}
+  <ul>
+    {% for forum in forums %}
+      <li>
+        <a href="{% url 'topic_list' forum.id %}">{{ forum.name }}</a> - {{ forum.description }}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Discussion forums coming soon...</p>
+{% endif %}

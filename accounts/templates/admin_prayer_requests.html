@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">🙏 Prayer Requests</h2>
+
+    {% if requests %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Title</th>
+                    <th>Message</th>
+                    <th>Date Submitted</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                    <tr>
+                        <td>{{ req.user.username }}</td>
+                        <td>{{ req.title }}</td>
+                        <td>{{ req.message }}</td>
+                        <td>{{ req.date_submitted|date:"M d, Y H:i" }}</td>
+                        <td>
+                            {% if req.is_answered %}
+                                <span class="badge bg-success">Answered</span>
+                            {% else %}
+                                <span class="badge bg-warning">Pending</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No prayer requests found.</p>
+    {% endif %}
+</div>
+{% endblock %}

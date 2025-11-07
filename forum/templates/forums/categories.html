@@ -1,0 +1,12 @@
+{% if categories %}
+    <ul>
+    {% for category in categories %}
+        <li>
+            <a href="{% url 'forums:threads' category.id %}">{{ category.name }}</a>
+            - {{ category.description }}
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>Discussion forums coming soon...</p>
+{% endif %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">Media Gallery</h2>
+
+    <a href="{% url 'accounts:media_gallery_create' %}" class="btn btn-primary mb-3">Upload Media</a>
+
+    <div class="row">
+        {% for item in items %}
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm">
+                {% if item.media_type == "image" %}
+                    <img src="{{ item.file.url }}" class="card-img-top" style="height:200px; object-fit:cover;">
+                {% else %}
+                    <video src="{{ item.file.url }}" controls style="width:100%; height:200px;"></video>
+                {% endif %}
+                <div class="card-body">
+                    <h6 class="card-title">{{ item.title }}</h6>
+                    <a href="{% url 'accounts:media_gallery_edit' item.id %}" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="{% url 'accounts:media_gallery_delete' item.id %}" class="btn btn-sm btn-danger"
+                       onclick="return confirm('Delete this item?');">
+                        Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No media uploaded yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

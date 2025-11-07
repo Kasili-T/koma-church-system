@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Your Chat Rooms</h3>
+
+{% if rooms %}
+<ul class="list-group">
+    {% for room in rooms %}
+        <li class="list-group-item">
+            <a href="{% url 'chat:chat_room' room_name=room.name %}">
+                {{ room.name }}
+            </a>
+        </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>You are not in any chat rooms.</p>
+{% endif %}
+
+{% endblock %}

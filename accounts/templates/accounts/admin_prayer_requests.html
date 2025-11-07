@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">🙏 Prayer Requests Management</h2>
+
+    {% if prayer_requests %}
+    <div class="table-responsive shadow-sm rounded">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>User</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Privacy</th>
+                    <th>Team Assigned</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in prayer_requests %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ req.user.username }}</td>
+                    <td>{{ req.title }}</td>
+                    <td>{{ req.description|truncatechars:60 }}</td>
+                    <td>
+                        {% if req.is_private %}
+                            <span class="badge bg-secondary">Private</span>
+                        {% else %}
+                            <span class="badge bg-info text-dark">Public</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ req.team_assigned|default:"—" }}</td>
+                    <td>
+                        {% if req.status == "Pending" %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% elif req.status == "Assigned" %}
+                            <span class="badge bg-primary">Assigned</span>
+                        {% elif req.status == "Answered" %}
+                            <span class="badge bg-success">Answered</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ req.created_at|date:"M d, Y H:i" }}</td>
+                   <td>
+    <button 
+        class="btn btn-sm btn-outline-secondary"
+        data-bs-toggle="modal"
+        data-bs-target="#updateModal{{ req.id }}">
+        Update
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade" id="updateModal{{ req.id }}" tabindex="-1">
+      <div class="modal-dialog">
+        <form method="POST" action="{% url 'accounts:update_prayer_request' req.id %}" class="modal-content">
+          {% csrf_token %}
+          
+          <div class="modal-header">
+            <h5 class="modal-title">Update Prayer Request</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Assign to Team</label>
+              <input type="text" name="team_assigned" class="form-control" value="{{ req.team_assigned }}">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Status</label>
+              <select name="status" class="form-select">
+                <option value="Pending" {% if req.status == "Pending" %}selected{% endif %}>Pending</option>
+                <option value="Assigned" {% if req.status == "Assigned" %}selected{% endif %}>Assigned</option>
+                <option value="Answered" {% if req.status == "Answered" %}selected{% endif %}>Answered</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+</td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="text-center text-muted mt-4">No prayer requests available.</p>
+    {% endif %}
+</div>
+{% endblock %}

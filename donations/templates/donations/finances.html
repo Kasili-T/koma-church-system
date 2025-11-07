@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">💰 Donations & Finances</h2>
+
+    <!-- Filter Section -->
+    <div class="card shadow-sm p-4 mb-4">
+        <form id="filterForm" method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="start" class="form-label">Start Date</label>
+                <input type="date" id="start" name="start" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label for="end" class="form-label">End Date</label>
+                <input type="date" id="end" name="end" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label for="method" class="form-label">Payment Method</label>
+                <select id="method" name="method" class="form-select">
+                    <option value="">All</option>
+                    <option value="Mpesa">Mpesa</option>
+                    <option value="PayPal">PayPal</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Bank">Bank Transfer</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="category" class="form-label">Category</label>
+                <select id="category" name="category" class="form-select">
+                    <option value="">All</option>
+                    <option value="Tithe">Tithe</option>
+                    <option value="Offering">Offering</option>
+                    <option value="Building Fund">Building Fund</option>
+                    <option value="Charity">Charity</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="col-12 text-end">
+                <button type="submit" class="btn btn-primary mt-3">Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card summary-card text-center shadow-sm p-3">
+                <h5>Total Donations</h5>
+                <h3 class="text-success fw-bold">Ksh {{ total_donations|floatformat:2 }}</h3>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card summary-card text-center shadow-sm p-3">
+                <h5>Total Expenses</h5>
+                <h3 class="text-danger fw-bold">Ksh {{ total_expenses|floatformat:2 }}</h3>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card summary-card text-center shadow-sm p-3">
+                <h5>Net Balance</h5>
+                <h3 class="text-primary fw-bold">Ksh {{ net_balance|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="card shadow-sm p-4 mb-4">
+        <h5 class="mb-3">📊 Donations by Category</h5>
+        <canvas id="donationCategoryChart"
+                data-labels='[{% for c in categories %}"{{ c.category }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
+                data-values='[{% for c in categories %}{{ c.total }}{% if not forloop.last %},{% endif %}{% endfor %}]'>
+        </canvas>
+    </div>
+
+    <!-- Recent Donations and Expenses -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm p-3 mb-4">
+                <h5>🧾 Recent Donations</h5>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Donor</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in donations %}
+                        <tr>
+                            <td>{{ d.donor_name }}</td>
+                            <td>Ksh {{ d.amount }}</td>
+                            <td>{{ d.payment_method }}</td>
+                            <td>{{ d.date_donated|date:"M d, Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center">No donations yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm p-3 mb-4">
+                <h5>💸 Recent Expenses</h5>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Amount</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in expenses %}
+                        <tr>
+                            <td>{{ e.title }}</td>
+                            <td>Ksh {{ e.amount }}</td>
+                            <td>{{ e.category }}</td>
+                            <td>{{ e.date_recorded|date:"M d, Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center">No expenses yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Chart.js and Custom JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'donations/donations.js' %}"></script>
+
+<style>
+.summary-card {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.4s ease;
+}
+.summary-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+</style>
+
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+{% load prayer_tags %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 900px;">
+
+  <h2 class="fw-bold mb-4">🙏 Submit a Prayer Request</h2>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Submit Request Form -->
+  <div class="card shadow-sm mb-5">
+    <div class="card-body p-4">
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Prayer Title</label>
+          {{ form.title|add_class:"form-control" }}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Your Prayer Message</label>
+          {{ form.description|add_class:"form-control" }}
+        </div>
+
+        <div class="form-check mb-3">
+          {{ form.is_private|add_class:"form-check-input" }}
+          <label class="form-check-label">Make this request private</label>
+        </div>
+
+        <button class="btn btn-primary w-100 fw-semibold" type="submit">✨ Submit Request</button>
+      </form>
+    </div>
+  </div>
+
+  <h3 class="fw-bold mb-3">📜 Your Prayer Requests</h3>
+
+  {% if requests %}
+    {% for prayer in requests %}
+      <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body">
+
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h5 class="fw-bold mb-1">{{ prayer.title }}</h5>
+              <small class="text-muted">{{ prayer.created_at|date:"d M Y, H:i" }}</small>
+            </div>
+
+            <span class="badge {% if prayer.is_private %}bg-warning text-dark{% else %}bg-success{% endif %}">
+              {{ prayer.is_private|yesno:"Private,Public" }}
+            </span>
+          </div>
+
+          <p class="mt-3" style="white-space: pre-line;">{{ prayer.description }}</p>
+
+          <div class="d-flex align-items-center gap-3 mt-2">
+
+            <!-- Reaction Button -->
+            <form method="post" action="{% url 'accounts:prayer_react' prayer.pk %}" class="d-inline" data-prayer-id="{{ prayer.pk }}">
+              {% csrf_token %}
+              <button type="button" class="btn btn-light btn-sm prayer-react-btn rounded-pill px-3">
+                🙏 <span class="react-count">{{ prayer.reaction_count }}</span>
+                {% if prayer|reacted_by:user %}
+                  <span class="ms-1 text-primary fw-semibold">(You Prayed)</span>
+                {% endif %}
+              </button>
+            </form>
+
+            <!-- Edit/Delete Controls -->
+            {% if prayer.user == user or user.is_superuser or user.role.name|lower in "admin,pastor,leader" %}
+              <a href="{% url 'accounts:prayer_edit' prayer.pk %}" class="btn btn-outline-secondary btn-sm">Edit</a>
+
+              <form method="post" action="{% url 'accounts:prayer_delete' prayer.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+              </form>
+            {% endif %}
+
+          </div>
+
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="text-muted">You have not submitted any requests yet.</p>
+  {% endif %}
+
+</div>
+
+<!-- AJAX Reaction Script -->
+<script>
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.prayer-react-btn');
+  if (!btn) return;
+
+  const form = btn.closest('form');
+  const url = form.action;
+  const csrftoken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': csrftoken,
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+  .then(r => r.json())
+  .then(data => {
+    btn.querySelector('.react-count').textContent = data.count;
+
+    if (data.reacted) {
+      btn.classList.add('text-primary');
+      btn.insertAdjacentHTML('beforeend', '<span class="ms-1 text-primary fw-semibold">(You Prayed)</span>');
+    } else {
+      btn.classList.remove('text-primary');
+      const badge = btn.querySelector('span.text-primary.fw-semibold');
+      if (badge) badge.remove();
+    }
+  });
+});
+</script>
+
+{% endblock %}

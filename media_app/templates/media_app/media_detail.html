@@ -1,0 +1,17 @@
+{% extends "accounts/base.html" %}
+{% block content %}
+<div class="container my-4">
+    <h2>{{ item.title }}</h2>
+    <p>{{ item.description }}</p>
+
+    {% if item.file %}
+        <p><a href="{{ item.file.url }}" target="_blank">Download/View File</a></p>
+    {% endif %}
+
+    {% if item.url %}
+        <p><a href="{{ item.url }}" target="_blank">External Link</a></p>
+    {% endif %}
+
+    <p><small>Uploaded on {{ item.uploaded_at|date:"d M Y H:i" }}</small></p>
+</div>
+{% endblock %}

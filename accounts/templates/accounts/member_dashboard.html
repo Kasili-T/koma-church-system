@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- 🧾 Dashboard Greeting -->
+    <h2>👋 Welcome, {{ request.user.username }}!</h2>
+
+    <!-- 🔔 Notification Bell (Dropdown Only) -->
+    <div class="d-flex justify-content-end mb-3 position-relative">
+        <button class="btn btn-light position-relative" id="notif-bell">
+            🔔
+            {% if unread_count > 0 %}
+            <span id="notif-count" class="badge bg-danger position-absolute top-0 start-100 translate-middle">
+                {{ unread_count }}
+            </span>
+            {% endif %}
+        </button>
+
+        <!-- Dropdown Notification List -->
+        <ul id="notif-list" class="list-group position-absolute bg-white shadow rounded"
+            style="right:0; top:45px; max-height:300px; overflow-y:auto; display:none; width:320px; z-index:1000; transition: all 0.3s ease;">
+            {% for note in notifications %}
+                <li class="list-group-item {% if not note.is_read %}fw-bold{% endif %}">
+                    <strong>{{ note.title }}</strong><br>
+                    {{ note.message }}<br>
+                    <small class="text-muted">{{ note.date_sent|date:"M d, Y H:i" }}</small>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted text-center">No notifications yet 🎉</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Events Button -->
+<div class="mb-3 text-center">
+    
+</div>
+
+<!-- Events Section (Hidden by default) -->
+<div id="eventsSection" class="card shadow-sm p-4 collapse">
+    <h2 class="text-center mb-4">📅 Church Events</h2>
+
+    {% if events %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Title</th>
+                    <th>Date</th>
+                    <th>Location</th>
+                    <th>Description</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <td>{{ event.title }}</td>
+                    <td>{{ event.date|date:"M d, Y H:i" }}</td>
+                    <td>{{ event.location }}</td>
+                    <td>{{ event.description|truncatechars:60 }}</td>
+                    <td class="text-center">
+                        {% if user.is_authenticated %}
+                            {% if user.is_staff %}
+                                <a href="{% url 'attendance:manage_event_attendance' event.id %}" class="btn btn-outline-primary btn-sm">Manage Attendance</a>
+                            {% elif event.id in registered_events %}
+                                <span class="badge bg-success px-3 py-2">Registered</span>
+                            {% else %}
+                                <a href="{% url 'events:register_event' event.id %}" class="btn btn-outline-primary btn-sm">Register</a>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary btn-sm">Login to Register</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-4">
+        <p class="text-muted fs-5">No events found.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 🔄 Notification Dropdown Script -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const bell = document.getElementById('notif-bell');
+    const list = document.getElementById('notif-list');
+    const count = document.getElementById('notif-count');
+
+    // Toggle dropdown on bell click
+    bell.addEventListener('click', () => {
+        const isVisible = list.style.display === 'block';
+        list.style.display = isVisible ? 'none' : 'block';
+
+        // Mark notifications as read when dropdown opens
+        if (!isVisible && count) {
+            fetch("{% url 'accounts:mark_notifications_read' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                },
+            }).then(res => {
+                if (res.ok) count.style.display = 'none';
+            });
+        }
+    });
+
+    // Close dropdown if clicking outside
+    document.addEventListener('click', function(e) {
+        if (list && !bell.contains(e.target) && !list.contains(e.target)) {
+            list.style.display = 'none';
+        }
+    });
+
+    // Optional: real-time WebSocket notifications
+    try {
+        const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+        const notifSocket = new WebSocket(wsScheme + '://' + window.location.host + '/ws/notifications/');
+
+        notifSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const message = data['message'];
+            const li = document.createElement('li');
+            li.classList.add('list-group-item', 'fw-bold');
+            li.innerHTML = `<strong>New Notification</strong><br>${message}<br><small class="text-muted">Just now</small>`;
+            list.prepend(li);
+
+            if (count) {
+                count.style.display = 'inline-block';
+                count.textContent = parseInt(count.textContent || 0) + 1;
+            }
+        };
+    } catch (err) {
+        console.warn("WebSocket not connected:", err);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Edit Member: {{ member.user.username }}</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label>Username</label>
+            <input type="text" name="username" class="form-control" value="{{ member.user.username }}" required>
+        </div>
+        <div class="mb-3">
+            <label>Email</label>
+            <input type="email" name="email" class="form-control" value="{{ member.user.email }}">
+        </div>
+        <div class="mb-3">
+            <label>First Name</label>
+            <input type="text" name="first_name" class="form-control" value="{{ member.user.first_name }}">
+        </div>
+        <div class="mb-3">
+            <label>Last Name</label>
+            <input type="text" name="last_name" class="form-control" value="{{ member.user.last_name }}">
+        </div>
+        <div class="mb-3">
+            <label>Role</label>
+            <select name="role" class="form-control">
+                <option value="">-- Select Role --</option>
+                {% for role in roles %}
+                    <option value="{{ role.id }}" {% if member.role == role %}selected{% endif %}>{{ role.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{% url 'accounts:member_management' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "admin_base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2 class="mb-3">🤝 Volunteers Management</h2>
+    <p class="text-muted">This page allows you to manage volunteer applications, approve/reject volunteers, and track their departments.</p>
+
+    <!-- ---------------- Search ---------------- -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search by name or department">
+        </div>
+    </div>
+
+    <!-- ---------------- Volunteer Table ---------------- -->
+    <div class="table-responsive mt-3">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>User</th>
+                    <th>Department</th>
+                    <th>Availability</th>
+                    <th>Status</th>
+                    <th>Applied On</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="volunteerTable">
+                {% if applications %}
+                    {% for app in applications %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ app.user.username }}</td>
+                        <td>{{ app.opportunity.department }}</td>
+                        <td>{{ app.availability }}</td>
+                        <td>
+                            {% if app.status == 'Approved' %}
+                                <span class="badge bg-success">{{ app.status }}</span>
+                            {% elif app.status == 'Rejected' %}
+                                <span class="badge bg-danger">{{ app.status }}</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">{{ app.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ app.applied_on|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'volunteers:approve_volunteer' app.id %}" class="btn btn-success btn-sm me-2">Approve</a>
+                            <a href="{% url 'volunteers:reject_volunteer' app.id %}" class="btn btn-danger btn-sm">Reject</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <!-- Placeholder row to show buttons even if no applications exist -->
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">No volunteer applications yet.</td>
+                        <td>
+                            <button class="btn btn-success btn-sm me-2" disabled>Approve</button>
+                            <button class="btn btn-danger btn-sm" disabled>Reject</button>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+document.getElementById("searchInput").addEventListener("keyup", function() {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#volunteerTable tr");
+    rows.forEach(row => {
+        const name = row.cells[1]?.textContent.toLowerCase();
+        const dept = row.cells[2]?.textContent.toLowerCase();
+        row.style.display = (name && dept && (name.includes(filter) || dept.includes(filter))) ? "" : "none";
+    });
+});
+</script>
+
+{% endblock %}

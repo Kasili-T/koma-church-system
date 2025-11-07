@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Room: {{ room_name }}</h3>
+<div id="chat-log" style="border:1px solid #ccc; padding:10px; height:300px; overflow-y:scroll;"></div>
+<div id="typing-indicator" style="font-style:italic; color:gray;"></div>
+<input id="chat-message-input" type="text" size="100" placeholder="Type your message...">
+<button id="chat-message-submit">Send</button>
+
+<script>
+const roomName = "{{ room_name }}";
+const username = "{{ user.username }}";
+const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+const chatSocket = new WebSocket(
+    wsScheme + '://' + window.location.host + '/ws/chat/' + roomName + '/'
+);
+
+const chatLog = document.getElementById("chat-log");
+const typingIndicator = document.getElementById("typing-indicator");
+const input = document.getElementById("chat-message-input");
+const button = document.getElementById("chat-message-submit");
+
+chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+
+    if (data.message && !data.typing) {
+        const msg = document.createElement("div");
+        msg.textContent = data.user + ": " + data.message;
+        chatLog.appendChild(msg);
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    if (data.typing) {
+        typingIndicator.textContent = data.user + " is typing...";
+    } else {
+        typingIndicator.textContent = "";
+    }
+
+    if (data.status) {
+        const status = document.createElement("div");
+        status.style.fontStyle = "italic";
+        status.style.color = "gray";
+        status.textContent = data.user + " is " + data.status;
+        chatLog.appendChild(status);
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+};
+
+input.addEventListener("input", function() {
+    chatSocket.send(JSON.stringify({
+        user: username,
+        typing: input.value.length > 0,
+        message: ""
+    }));
+});
+
+button.onclick = function() {
+    if (input.value.trim() !== "") {
+        chatSocket.send(JSON.stringify({
+            user: username,
+            message: input.value.trim(),
+            typing: false
+        }));
+        input.value = "";
+    }
+};
+
+input.addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        button.click();
+    }
+});
+</script>
+{% endblock %}

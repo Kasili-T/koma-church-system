@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>{{ thread.title }}</h2>
+<p>Category: <a href="{% url 'forums:threads' thread.category.id %}">{{ thread.category.name }}</a></p>
+<p>Created by {{ thread.creator.username }} on {{ thread.created_at|date:"M d, Y H:i" }}</p>
+
+<hr>
+
+{% if posts %}
+    <ul>
+    {% for post in posts %}
+        <li>
+            <strong>{{ post.author.username }}</strong> ({{ post.created_at|date:"M d, Y H:i" }}):<br>
+            {{ post.content }}
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No posts yet.</p>
+{% endif %}
+
+{% if user.is_authenticated %}
+    <h3>Reply</h3>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Post Reply</button>
+    </form>
+{% else %}
+    <p><a href="{% url 'login' %}">Login</a> to reply.</p>
+{% endif %}
+
+<a href="{% url 'forums:threads' thread.category.id %}" class="btn btn-link mt-3">Back to Threads</a>
+{% endblock %}

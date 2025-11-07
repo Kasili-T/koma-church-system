@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm p-4">
+        <h2 class="text-center mb-4">📝 Attendance Records</h2>
+
+        <!-- Filter Section -->
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-4">
+                <select name="event" class="form-select">
+                    <option value="">-- Filter by Event --</option>
+                    {% for ev in events %}
+                        <option value="{{ ev.id }}">{{ ev.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
+
+        <!-- Add Attendance Record -->
+        <form method="post" action="{% url 'mark_attendance' %}" class="card p-3 mb-4">
+            {% csrf_token %}
+            <h5 class="mb-3">Add / Update Attendance</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label>Member</label>
+                    <select name="member" class="form-select" required>
+                        {% for m in members %}
+                            <option value="{{ m.id }}">{{ m.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label>Event</label>
+                    <select name="event" class="form-select" required>
+                        {% for e in events %}
+                            <option value="{{ e.id }}">{{ e.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label>Status</label>
+                    <select name="status" class="form-select">
+                        <option>Present</option>
+                        <option>Absent</option>
+                        <option>Late</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label>Remarks</label>
+                    <input type="text" name="remarks" class="form-control" placeholder="Optional">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success w-100">✔</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Attendance Table -->
+        <table class="table table-striped table-hover">
+            <thead class="table-primary">
+                <tr>
+                    <th>#</th>
+                    <th>Member</th>
+                    <th>Event</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ record.member.username }}</td>
+                    <td>{{ record.event.title }}</td>
+                    <td>{{ record.date }}</td>
+                    <td>
+                        {% if record.status == 'Present' %}
+                            <span class="badge bg-success">{{ record.status }}</span>
+                        {% elif record.status == 'Absent' %}
+                            <span class="badge bg-danger">{{ record.status }}</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">{{ record.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ record.remarks|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted">No attendance records found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="mb-4">➕ Add Volunteer Opportunity</h2>
+    <p class="text-muted">Fill in the details below to create a new volunteer opportunity that members can apply for.</p>
+
+    <form method="POST" class="card p-4 shadow-sm">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="department" class="form-label fw-bold">Department *</label>
+            <input type="text" name="department" id="department" class="form-control" placeholder="e.g., Ushering, Choir, Media" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="required_availability" class="form-label fw-bold">Required Availability *</label>
+            <input type="text" name="required_availability" id="required_availability" class="form-control" placeholder="e.g., Sundays, Weekdays, Flexible" required>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'admin_opportunities' %}" class="btn btn-secondary">← Back</a>
+            <button type="submit" class="btn btn-primary">Save Opportunity</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

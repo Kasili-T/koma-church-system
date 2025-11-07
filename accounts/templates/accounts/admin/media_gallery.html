@@ -1,0 +1,31 @@
+{% extends 'accounts/admin_dashboard.html' %}
+
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>🎞️ Media Gallery Management</h2>
+        <a href="{% url 'accounts:media_upload' %}" class="btn btn-primary">Upload New Media</a>
+    </div>
+
+    {% if media_items %}
+        <div class="row">
+            {% for item in media_items %}
+            <div class="col-md-3 mb-4">
+                <div class="card shadow-sm">
+                    <img src="{{ item.file.url }}" class="card-img-top" style="height:180px; object-fit:cover;">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ item.title }}</h6>
+                        <a href="{{ item.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">View</a>
+                        <a href="{% url 'accounts:media_delete' item.id %}" class="btn btn-sm btn-outline-danger"
+                           onclick="return confirm('Delete this media?')">Delete</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">No media items uploaded yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

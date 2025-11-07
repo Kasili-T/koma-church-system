@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Sermons</h2>
+    <ul class="list-group">
+        {% for sermon in sermons %}
+            <li class="list-group-item">
+                <strong>{{ sermon.title }}</strong> - {{ sermon.speaker }} ({{ sermon.date }})<br>
+                <p>{{ sermon.description }}</p>
+                {% if sermon.video_link %}
+                    <a href="{{ sermon.video_link }}" target="_blank">Watch</a>
+                {% endif %}
+                {% if sermon.audio_link %}
+                    | <a href="{{ sermon.audio_link }}" target="_blank">Listen</a>
+                {% endif %}
+            </li>
+        {% empty %}
+            <li class="list-group-item">No sermons available.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

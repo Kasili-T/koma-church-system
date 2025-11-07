@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Threads in {{ category.name }}</h2>
+
+{% if threads %}
+    <ul>
+    {% for thread in threads %}
+        <li>
+            <a href="{% url 'forums:thread_view' thread.id %}">{{ thread.title }}</a>
+            - Created by {{ thread.creator.username }} on {{ thread.created_at|date:"M d, Y H:i" }}
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No threads yet.</p>
+{% endif %}
+
+{% if user.is_authenticated %}
+    <a href="{% url 'forums:create_thread' category.id %}" class="btn btn-primary mt-3">Create New Thread</a>
+{% else %}
+    <p><a href="{% url 'login' %}">Login</a> to create a new thread.</p>
+{% endif %}
+
+<a href="{% url 'forums:categories' %}" class="btn btn-link mt-3">Back to Categories</a>
+{% endblock %}

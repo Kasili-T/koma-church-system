@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">
+        {% if sermon %}
+            Edit Sermon
+        {% else %}
+            Add New Sermon
+        {% endif %}
+    </h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" name="title" id="title" class="form-control"
+                   value="{{ sermon.title|default_if_none:'' }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="preacher" class="form-label">Preacher</label>
+            <input type="text" name="preacher" id="preacher" class="form-control"
+                   value="{{ sermon.preacher|default_if_none:'' }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="media_url" class="form-label">Media URL</label>
+            <input type="url" name="media_url" id="media_url" class="form-control"
+                   value="{{ sermon.media_url|default_if_none:'' }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea name="description" id="description" class="form-control" rows="4">{{ sermon.description|default_if_none:'' }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            {% if sermon %}
+                Update Sermon
+            {% else %}
+                Add Sermon
+            {% endif %}
+        </button>
+        <a href="{% url 'accounts:sermons' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

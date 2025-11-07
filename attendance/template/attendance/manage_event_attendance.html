@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <div class="card shadow-sm p-4">
+        <h2 class="text-center mb-4">
+            🧾 Manage Attendance for <span class="text-primary">{{ event.title }}</span>
+        </h2>
+
+        <p class="text-muted text-center mb-4">
+            Date: {{ event.date|date:"M d, Y H:i" }} | Location: {{ event.location }}
+        </p>
+
+        <!-- Attendance Form -->
+        <form method="post" action="{% url 'attendance:save_attendance' event.id %}">
+            {% csrf_token %}
+            
+            {% if attendees %}
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Member</th>
+                            <th>Status</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attendee in attendees %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ attendee.username }}</td>
+                            <td>
+                                <select name="status_{{ attendee.id }}" class="form-select">
+                                    <option value="Present" {% if attendance_records.attendee.id == "Present" %}selected{% endif %}>Present</option>
+                                    <option value="Absent" {% if attendance_records.attendee.id == "Absent" %}selected{% endif %}>Absent</option>
+                                    <option value="Late" {% if attendance_records.attendee.id == "Late" %}selected{% endif %}>Late</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" name="remarks_{{ attendee.id }}" class="form-control" 
+                                       placeholder="Add remarks..." 
+                                       value="{{ attendance_records.attendee.id_remarks }}">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary px-5">💾 Save Attendance</button>
+                <a href="{% url 'events:event_list' %}" class="btn btn-secondary px-4">⬅ Back to Events</a>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p class="text-muted fs-5">No registered members found for this event.</p>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Styles -->
+<style>
+.table th, .table td {
+    vertical-align: middle;
+}
+</style>
+{% endblock %}

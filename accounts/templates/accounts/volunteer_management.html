@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>🤝 Volunteers Management</h2>
+    <p class="text-muted">
+        Manage volunteer applications, approve/reject volunteers, and track their departments.
+    </p>
+
+    <!-- Search Bar -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <input type="text" id="volunteerSearch" class="form-control" placeholder="Search by name or department">
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-primary" onclick="searchVolunteers()">Search</button>
+        </div>
+    </div>
+
+    <!-- Volunteers Table -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>User</th>
+                    <th>Department</th>
+                    <th>Availability</th>
+                    <th>Status</th>
+                    <th>Applied On</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if volunteers %}
+                    {% for volunteer in volunteers %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ volunteer.user.get_full_name }}</td>
+                        <td>{{ volunteer.department }}</td>
+                        <td>{{ volunteer.availability }}</td>
+                        <td>{{ volunteer.status }}</td>
+                        <td>{{ volunteer.applied_on|date:"Y-m-d" }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success">Approve</button>
+                            <button class="btn btn-sm btn-danger">Reject</button>
+                            <button class="btn btn-sm btn-primary">Edit</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">No volunteer applications yet.</td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-success" disabled>Approve</button>
+                            <button class="btn btn-sm btn-danger" disabled>Reject</button>
+                            <button class="btn btn-sm btn-primary" disabled>Edit</button>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add Volunteer Button -->
+    <button class="btn btn-success mt-3">➕ Add Volunteer</button>
+</div>
+
+<!-- Optional: Simple JS search -->
+<script>
+function searchVolunteers() {
+    const input = document.getElementById('volunteerSearch').value.toLowerCase();
+    const rows = document.querySelectorAll('table tbody tr');
+    rows.forEach(row => {
+        const user = row.cells[1]?.innerText.toLowerCase() || '';
+        const dept = row.cells[2]?.innerText.toLowerCase() || '';
+        if(user.includes(input) || dept.includes(input)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

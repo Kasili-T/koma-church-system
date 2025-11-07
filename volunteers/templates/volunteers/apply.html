@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">🤝 Apply as a Volunteer</h2>
+    <p class="text-muted text-center">Choose a department and tell us when you're available to serve.</p>
+
+    <div class="card shadow-sm mt-4">
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+
+                <!-- ---------------- Volunteer Department ---------------- -->
+                <div class="mb-3">
+                    <label for="department" class="form-label">Volunteer In <span class="text-danger">*</span></label>
+                    <select name="department" id="department" class="form-select" required>
+                        <option value="">-- Choose a department --</option>
+                        <option value="Ushering">Ushering</option>
+                        <option value="Choir">Choir</option>
+                        <option value="Teaching">Sunday School</option>
+                        <option value="Media">Media/Technical</option>
+                        <option value="Prayer">Prayer Ministry</option>
+                        <option value="Outreach">Outreach</option>
+                        <option value="Event Support">Event Support</option>
+                    </select>
+                </div>
+
+                <!-- ---------------- Availability ---------------- -->
+                <div class="mb-3">
+                    <label for="availability" class="form-label">Your Availability <span class="text-danger">*</span></label>
+                    <input type="text" name="availability" id="availability" class="form-control" 
+                           placeholder="e.g., Weekends, Evenings, Anytime" required>
+                </div>
+
+                <!-- ---------------- Submit ---------------- -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'volunteers:volunteer_dashboard' %}" class="btn btn-secondary">
+                        ← Back to Dashboard
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        Submit Application
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

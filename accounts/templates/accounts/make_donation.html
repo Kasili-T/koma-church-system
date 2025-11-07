@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">💰 Make a Donation</h2>
+
+    <form method="post" class="card p-4 shadow-sm">
+        {% csrf_token %}
+
+        <!-- Category selection first -->
+        <div class="mb-3">
+            <label for="id_category" class="form-label">Donation Category <span class="text-danger">*</span></label>
+            {{ form.category }}
+        </div>
+
+        <!-- Donor name -->
+        <div class="mb-3">
+            <label for="id_donor_name" class="form-label">Full Name</label>
+            {{ form.donor_name }}
+        </div>
+
+        <!-- Email -->
+        <div class="mb-3">
+            <label for="id_email" class="form-label">Email</label>
+            {{ form.email }}
+        </div>
+
+        <!-- Amount -->
+        <div class="mb-3">
+            <label for="id_amount" class="form-label">Amount (Ksh)</label>
+            {{ form.amount }}
+        </div>
+
+        <!-- Payment Method -->
+        <div class="mb-3">
+            <label for="id_payment_method" class="form-label">Payment Method</label>
+            {{ form.payment_method }}
+        </div>
+
+        <!-- Mpesa phone input -->
+        <div class="mb-3">
+            <label for="phone_number" class="form-label">Phone Number</label>
+            <input type="text" name="phone_number" id="phone_number" placeholder="2547XXXXXXXX" required class="form-control">
+        </div>
+
+        <!-- Transaction ID -->
+        <div class="mb-3">
+            <label for="id_transaction_id" class="form-label">Transaction ID</label>
+            {{ form.transaction_id }}
+        </div>
+
+        <!-- Status (optional, could be hidden) -->
+        {{ form.status }}
+
+        <button type="submit" class="btn btn-primary mt-3">Donate</button>
+    </form>
+</div>
+{% endblock %}

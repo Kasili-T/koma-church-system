@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>{{ forum.name }}</h3>
+<p>{{ forum.description }}</p>
+<ul class="list-group">
+    {% for topic in forum.topics.all %}
+    <li class="list-group-item">
+        <a href="{% url 'topic_detail' topic.id %}">{{ topic.title }}</a> ({{ topic.posts.count }} posts)
+    </li>
+    {% empty %}
+    <li>No topics yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

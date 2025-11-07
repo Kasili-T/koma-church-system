@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- ---------------- Dashboard Cards ---------------- -->
+    <div class="row g-4">
+
+        <div class="col-md-3"><div class="card shadow-sm p-3 text-center"><h5>Profile</h5></div></div>
+        <div class="col-md-3"><div class="card shadow-sm p-3 text-center"><h5>My Donations</h5></div></div>
+        <div class="col-md-3"><div class="card shadow-sm p-3 text-center"><h5>Attendance</h5></div></div>
+
+        <!-- Events Button Card -->
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3 text-center">
+                <button id="eventsButton" class="btn btn-success w-100">📅 Events</button>
+            </div>
+        </div>
+
+        <div class="col-md-3"><div class="card shadow-sm p-3 text-center"><h5>Chat</h5></div></div>
+        <div class="col-md-3"><div class="card shadow-sm p-3 text-center"><h5>Forums</h5></div></div>
+
+        <!-- Make Contribution Card -->
+        <div class="col-md-3">
+            <div class="card shadow-sm p-3 text-center">
+                <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#donationModal">
+                    💰 Make Contribution
+                </button>
+            </div>
+        </div>
+
+        <div class="col-md-3"><div class="card shadow-sm p-3 text-center"><h5>Volunteer</h5></div></div>
+        <div class="col-md-3"><div class="card shadow-sm p-3 text-center"><h5>Prayer Requests</h5></div></div>
+        <div class="col-md-3"><div class="card shadow-sm p-3 text-center"><h5>News Feed</h5></div></div>
+        <div class="col-md-3"><div class="card shadow-sm p-3 text-center"><h5>Sermons</h5></div></div>
+        <div class="col-md-3"><div class="card shadow-sm p-3 text-center"><h5>Media Gallery</h5></div></div>
+
+    </div>
+
+    <!-- ---------------- Hidden Events Section ---------------- -->
+    <div id="eventsSection" class="card shadow-sm p-4 mt-4" style="display:none;">
+        <h2 class="text-center mb-4">📅 Upcoming Events</h2>
+        <p class="text-center text-muted">Stay updated with church events.</p>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Event</th>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th>Map</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                    <tr>
+                        <td>{{ event.title }}</td>
+                        <td>{{ event.date|date:"M d, Y" }}</td>
+                        <td>{{ event.location }}</td>
+                        <td><!-- Optional Map link --></td>
+                        <td>
+                            {% if event.date >= timezone.now %}
+                                Upcoming
+                            {% else %}
+                                Past
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No events available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- ---------------- Make Contribution Modal ---------------- -->
+<div class="modal fade" id="donationModal" tabindex="-1" aria-labelledby="donationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'accounts:make_donation' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="donationModalLabel">💰 Make a Contribution</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+
+          <!-- Donation Category first -->
+          <div class="mb-3">
+            <label for="id_category" class="form-label">Donation Category <span class="text-danger">*</span></label>
+            {{ form.category }}
+          </div>
+
+          <div class="mb-3">
+            <label for="id_donor_name" class="form-label">Full Name</label>
+            {{ form.donor_name }}
+          </div>
+
+          <div class="mb-3">
+            <label for="id_email" class="form-label">Email</label>
+            {{ form.email }}
+          </div>
+
+          <div class="mb-3">
+            <label for="id_amount" class="form-label">Amount (Ksh)</label>
+            {{ form.amount }}
+          </div>
+
+          <div class="mb-3">
+            <label for="id_payment_method" class="form-label">Payment Method</label>
+            {{ form.payment_method }}
+          </div>
+
+          <div class="mb-3">
+            <label for="phone_number" class="form-label">Phone Number</label>
+            <input type="text" name="phone_number" id="phone_number" placeholder="2547XXXXXXXX" required class="form-control">
+          </div>
+
+          <div class="mb-3">
+            <label for="id_transaction_id" class="form-label">Transaction ID</label>
+            {{ form.transaction_id }}
+          </div>
+
+          <!-- Status hidden -->
+          {{ form.status }}
+
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success w-100">Donate</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ---------------- JS ---------------- -->
+<script>
+const eventsButton = document.getElementById('eventsButton');
+const eventsSection = document.getElementById('eventsSection');
+
+eventsButton.addEventListener('click', () => {
+    if (eventsSection.style.display === 'none' || eventsSection.style.display === '') {
+        eventsSection.style.display = 'block';
+        eventsSection.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        eventsSection.style.display = 'none';
+    }
+});
+</script>
+
+{% endblock %}

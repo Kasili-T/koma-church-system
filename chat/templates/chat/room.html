@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h3>Room: {{ room.name }}</h3>
+
+    <!-- Past messages -->
+    <div id="chat-log" class="border rounded p-3 mb-3" style="height:300px; overflow-y:scroll;">
+        {% for msg in messages %}
+            <div>
+                <strong>{{ msg.sender.username }}</strong>: {{ msg.content }}
+                <span class="text-muted small">({{ msg.timestamp|date:"H:i" }})</span>
+            </div>
+        {% empty %}
+            <p class="text-muted">No messages yet.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Typing indicator -->
+    <div id="typing-indicator" class="text-muted fst-italic"></div>
+
+    <!-- Input -->
+    <form method="post" class="d-flex mt-2">
+        {% csrf_token %}
+        <input id="chat-message-input" name="message" type="text" class="form-control me-2" placeholder="Type your message...">
+        <button id="chat-message-submit" type="submit" class="btn btn-success">Send</button>
+    </form>
+</div>
+
+<script>
+const roomName = "{{ room.id }}";
+const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+const chatSocket = new WebSocket(
+    wsScheme + '://' + window.location.host + '/ws/chat/' + roomName + '/'
+);
+
+const chatLog = document.getElementById("chat-log");
+const typingIndicator = document.getElementById("typing-indicator");
+const input = document.getElementById("chat-message-input");
+const button = document.getElementById("chat-message-submit");
+
+chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+
+    if (data.message !== undefined && !data.typing) {
+        const msg = document.createElement("div");
+        msg.innerHTML = "<strong>" + data.user + "</strong>: " + data.message;
+        chatLog.appendChild(msg);
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    if (data.typing) {
+        typingIndicator.textContent = data.user + " is typing...";
+    } else {
+        typingIndicator.textContent = "";
+    }
+
+    if (data.status) {
+        const status = document.createElement("div");
+        status.style.fontStyle = "italic";
+        status.style.color = "gray";
+        status.textContent = data.user + " is " + data.status;
+        chatLog.appendChild(status);
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+};
+
+input.addEventListener("input", function() {
+    chatSocket.send(JSON.stringify({
+        typing: input.value.length > 0,
+        message: ""
+    }));
+});
+
+button.onclick = function(e) {
+    e.preventDefault(); // prevent form submit refresh
+    chatSocket.send(JSON.stringify({
+        message: input.value,
+        typing: false
+    }));
+    input.value = "";
+};
+</script>
+{% endblock %}

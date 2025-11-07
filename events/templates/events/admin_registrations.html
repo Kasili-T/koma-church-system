@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Event Registrations</h2>
+
+    {% if events %}
+        {% for event in events %}
+        <div class="card mt-3 p-3 shadow-sm">
+            <h4>{{ event.title }}</h4>
+            <p><strong>Date:</strong> {{ event.date|date:"M d, Y H:i" }}</p>
+            <p><strong>Location:</strong> {{ event.location }}</p>
+            <p>{{ event.description }}</p>
+
+            <h6>Registered Members:</h6>
+            <ul>
+                {% for reg in event.registrations.all %}
+                    <li>{{ reg.member.username }} ({{ reg.member.email }})</li>
+                {% empty %}
+                    <li><em>No members have registered yet.</em></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No events available.</p>
+    {% endif %}
+</div>
+{% endblock %}
