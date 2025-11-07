@@ -1,24 +1,24 @@
-services: 
-"  - type: web" 
-"    name: koma-backend" 
-"    env: python" 
-"    buildCommand: pip install -r requirements.txt" 
-"    startCommand: gunicorn koma.asgi:application -k uvicorn.workers.UvicornWorker" 
-"    envVars:" 
-"      - key: SECRET_KEY" 
-"        value: your-secret-key" 
-"      - key: DEBUG" 
-"        value: True" 
-"      - key: EMAIL_HOST_USER" 
-"        value: your-gmail@gmail.com" 
-"      - key: EMAIL_HOST_PASSWORD" 
-"        value: your-app-password" 
-"    staticPublishPath: staticfiles" 
-"" 
-"  - type: redis" 
-"    name: redis" 
-"    ipAllowList: []" 
-"" 
-"databases:" 
-"  - name: koma_db" 
-"    plan: free" 
+services:
+  - type: web
+    name: koma-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn koma.asgi:application -k uvicorn.workers.UvicornWorker
+    envVars:
+      - key: SECRET_KEY
+        value: your-secret-key
+      - key: DEBUG
+        value: True
+      - key: EMAIL_HOST_USER
+        value: your-gmail@gmail.com
+      - key: EMAIL_HOST_PASSWORD
+        value: your-app-password
+    staticPublishPath: staticfiles
+ECHO is on.
+  - type: redis
+    name: redis
+    ipAllowList: []
+ECHO is on.
+databases:
+  - name: koma_db
+    plan: free
