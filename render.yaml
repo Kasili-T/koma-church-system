@@ -5,7 +5,8 @@
     buildCommand: |
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
-    startCommand: gunicorn koma.asgi:application -k uvicorn.workers.UvicornWorker
+  startCommand: daphne -b 0.0.0.0 -p $PORT koma.asgi:application
+
     envVars:
       - key: SECRET_KEY
         value: your-secret-key
